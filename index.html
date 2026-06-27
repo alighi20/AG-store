@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-reboot.min.css">
+    <title>Document</title>
+</head>
+<body>
+     <!-- هدر سایت -->
+    <header class="main-header">
+        <div class="container">
+            <a href="." class="logo">
+                <img src="img/91bf0b86-863d-42b2-8ec4-ad10cfdbd6a6.png" style="width: 50px;" alt="logo" class="logo__img">
+            </a>
+            <div class="search-bar">
+                <input type="text" placeholder="جستجو در محصولات...">
+            </div>
+            <div class="user-actions">ورود | ثبت‌نام</div>
+        </div>
+    </header>
+<!-- منوی دسته‌بندی محصولات -->
+<nav class="sub-nav">
+    <div class="container">
+        <ul class="menu-list">
+            <li class="menu-item categories">
+                <i class="icon-menu"></i> <!-- می‌توانید اینجا آیکون بگذارید -->
+                <strong>گروه محصولات</strong>
+                
+                <!-- زیرمنو (که با هاور باز می‌شود) -->
+                <div class="mega-menu">
+                    <ul>
+                        <li>لپ‌تاپ و اولترابوک</li>
+                        <li>موبایل و تبلت</li>
+                        <li>قطعات کامپیوتر</li>
+                        <li>لوازم جانبی</li>
+                    </ul>
+                </div>
+            </li>
+            <li class="menu-item"><a href="#">محصولات پرفروش</a></li>
+            <li class="menu-item"><a href="#">تخفیف‌ها و پیشنهادها</a></li>
+            <li class="menu-item"><a href="#">سوالی دارید؟</a></li>
+        </ul>
+    </div>
+</nav>
+
+    <main class="container main-content">
+        <!-- ستون فیلترها -->
+        <aside class="sidebar">
+            <h3>فیلترها</h3>
+            <div class="filter-group">
+                <label>محدوده قیمت</label>
+                <input type="range">
+            </div>
+            <div class="filter-group">
+                <label>برند</label>
+                <ul>
+                    <li><input type="checkbox"> ایسوس</li>
+                    <li><input type="checkbox"> لنوو</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- بخش محصولات -->
+        <section class="products-section">
+            <div class="sorting">
+                مرتب‌سازی: <span>جدیدترین</span> | <span>ارزان‌ترین</span>
+            </div>
+            <div class="product-grid">
+                
+                <!-- کارت محصول (نمونه) -->
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/200" alt="لپ‌تاپ">
+                    <h4>لپ‌تاپ ایسوس مدل ROG Strix</h4>
+                    <div class="price">۴۳۸,۰۰۰,۰۰۰ تومان</div>
+                    <button class="add-btn">افزودن به سبد</button>
+                </div>
+                <!-- تکرار کارت‌ها -->
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/200" alt="لپ‌تاپ">
+                    <h4>لپ‌تاپ TUF Gaming</h4>
+                    <div class="price">۱۹۲,۹۹۰,۰۰۰ تومان</div>
+                    <button class="add-btn">افزودن به سبد</button>
+                </div>
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/200" alt="لپ‌تاپ">
+                    <h4>لپ‌تاپ Vivobook 16</h4>
+                    <div class="price">۱۲۱,۹۰۰,۰۰۰ تومان</div>
+                    <button class="add-btn">افزودن به سبد</button>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    
+    
+</body>
+</html>
