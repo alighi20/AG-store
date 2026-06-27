@@ -1,100 +1,115 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/bootstrap-reboot.min.css">
-    <title>Document</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>فروشگاه</title>
+
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/bootstrap-reboot.min.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body>
-     <!-- هدر سایت -->
+
     <header class="main-header">
-        <div class="container">
-            <a href="." class="logo">
-                <img src="img/91bf0b86-863d-42b2-8ec4-ad10cfdbd6a6.png" style="width: 50px;" alt="logo" class="logo__img">
+        <div class="container header-row">
+            <a href="#/" class="logo">
+                <span class="logo-text">Tech Store</span>
             </a>
+
             <div class="search-bar">
-                <input type="text" placeholder="جستجو در محصولات...">
+                <input type="text" id="searchInput" placeholder="جستجو در محصولات..." />
             </div>
-            <div class="user-actions">ورود | ثبت‌نام</div>
+
+            <div class="header-actions">
+                <button id="cartToggleBtn" class="cart-btn">
+                    <i class="fa fa-shopping-cart"></i>
+                    <span>سبد</span>
+                    <span id="cartCount" class="cart-count">0</span>
+                </button>
+
+                <div id="authArea" class="auth-area">
+                    <div id="guestBox" class="auth-container">
+                        <input type="text" id="username" placeholder="نام کاربری" />
+                        <input type="password" id="password" placeholder="رمز عبور" />
+                        <button id="loginBtn">ورود</button>
+                    </div>
+
+                    <div id="userBox" class="user-box hidden">
+                        <span class="welcome-text">وارد شده‌اید</span>
+                        <button id="logoutBtn" class="logout-btn">خروج</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
-<!-- منوی دسته‌بندی محصولات -->
-<nav class="sub-nav">
-    <div class="container">
-        <ul class="menu-list">
-            <li class="menu-item categories">
-                <i class="icon-menu"></i> <!-- می‌توانید اینجا آیکون بگذارید -->
-                <strong>گروه محصولات</strong>
-                
-                <!-- زیرمنو (که با هاور باز می‌شود) -->
-                <div class="mega-menu">
-                    <ul>
-                        <li>لپ‌تاپ و اولترابوک</li>
-                        <li>موبایل و تبلت</li>
-                        <li>قطعات کامپیوتر</li>
-                        <li>لوازم جانبی</li>
-                    </ul>
-                </div>
-            </li>
-            <li class="menu-item"><a href="#">محصولات پرفروش</a></li>
-            <li class="menu-item"><a href="#">تخفیف‌ها و پیشنهادها</a></li>
-            <li class="menu-item"><a href="#">سوالی دارید؟</a></li>
-        </ul>
-    </div>
-</nav>
+
+    <nav class="sub-nav">
+        <div class="container">
+            <ul class="menu-list">
+                <li class="menu-item categories">
+                    <strong>گروه محصولات</strong>
+                    <div class="mega-menu">
+                        <ul>
+                            <li><a href="#/" data-category="all">همه محصولات</a></li>
+                            <li><a href="#/" data-category="laptop">لپ‌تاپ و اولترابوک</a></li>
+                            <li><a href="#/" data-category="mobile">موبایل و تبلت</a></li>
+                            <li><a href="#/" data-category="parts">قطعات کامپیوتر</a></li>
+                            <li><a href="#/" data-category="accessory">لوازم جانبی</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="menu-item"><a href="#/">محصولات</a></li>
+                <li class="menu-item"><a href="#/cart">سبد خرید</a></li>
+            </ul>
+        </div>
+    </nav>
 
     <main class="container main-content">
-        <!-- ستون فیلترها -->
         <aside class="sidebar">
             <h3>فیلترها</h3>
+
             <div class="filter-group">
-                <label>محدوده قیمت</label>
-                <input type="range">
+                <label for="sortSelect">مرتب‌سازی</label>
+                <select id="sortSelect">
+                    <option value="default">پیش‌فرض</option>
+                    <option value="price-asc">ارزان‌ترین</option>
+                    <option value="price-desc">گران‌ترین</option>
+                    <option value="title">الفبایی</option>
+                </select>
             </div>
+
             <div class="filter-group">
-                <label>برند</label>
-                <ul>
-                    <li><input type="checkbox"> ایسوس</li>
-                    <li><input type="checkbox"> لنوو</li>
-                </ul>
+                <label for="minPrice">حداقل قیمت</label>
+                <input type="number" id="minPrice" placeholder="مثلاً 1000000" />
+            </div>
+
+            <div class="filter-group">
+                <label for="maxPrice">حداکثر قیمت</label>
+                <input type="number" id="maxPrice" placeholder="مثلاً 50000000" />
+            </div>
+
+            <div class="filter-group">
+                <button id="applyFiltersBtn" class="filter-btn">اعمال فیلتر</button>
             </div>
         </aside>
 
-        <!-- بخش محصولات -->
         <section class="products-section">
-            <div class="sorting">
-                مرتب‌سازی: <span>جدیدترین</span> | <span>ارزان‌ترین</span>
+            <div class="sorting top-bar">
+                <div id="pageTitle">لیست محصولات</div>
+                <div id="statusText">آماده</div>
             </div>
-            <div class="product-grid">
-                
-                <!-- کارت محصول (نمونه) -->
-                <div class="product-card">
-                    <img src="https://via.placeholder.com/200" alt="لپ‌تاپ">
-                    <h4>لپ‌تاپ ایسوس مدل ROG Strix</h4>
-                    <div class="price">۴۳۸,۰۰۰,۰۰۰ تومان</div>
-                    <button class="add-btn">افزودن به سبد</button>
-                </div>
-                <!-- تکرار کارت‌ها -->
-                <div class="product-card">
-                    <img src="https://via.placeholder.com/200" alt="لپ‌تاپ">
-                    <h4>لپ‌تاپ TUF Gaming</h4>
-                    <div class="price">۱۹۲,۹۹۰,۰۰۰ تومان</div>
-                    <button class="add-btn">افزودن به سبد</button>
-                </div>
-                <div class="product-card">
-                    <img src="https://via.placeholder.com/200" alt="لپ‌تاپ">
-                    <h4>لپ‌تاپ Vivobook 16</h4>
-                    <div class="price">۱۲۱,۹۰۰,۰۰۰ تومان</div>
-                    <button class="add-btn">افزودن به سبد</button>
-                </div>
-            </div>
+
+            <div id="app"></div>
+
+            <div id="pagination" class="pagination"></div>
         </section>
     </main>
-    
-    
-    
+
+    <div id="cartDrawer" class="cart-drawer hidden"></div>
+    <div id="toastBox" class="toast-box"></div>
+
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
