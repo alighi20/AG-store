@@ -1133,3 +1133,43 @@ body {
         width: 100%;
     }
 }
+.hidden {
+  display: none !important;
+}
+
+.auth-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.guest-box,
+.user-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-toggle-btn,
+.logout-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  background: #222;
+  color: #fff;
+}
+
+.auth-toggle-btn.secondary {
+  background: #555;
+}
+
+.auth-toggle-btn:hover,
+.logout-btn:hover {
+  opacity: 0.9;
+}
+
+.welcome-text {
+  font-size: 14px;
+  color: #333;
+}
