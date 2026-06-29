@@ -1,0 +1,130 @@
+// ui.js
+
+/**
+ * رندر دسته‌بندی‌ها در منو
+ */
+export function renderCategories(categories) {
+    const navContainer = document.getElementById('submenu-categoy');
+    if (!navContainer) return;
+
+    navContainer.innerHTML = ""; // پاکسازی قبلی
+    const fragment = document.createDocumentFragment();
+
+    categories.forEach((item) => {
+        const li = document.createElement('li');
+        li.className = "p-2 border-bottom-0"; // استایل بوت‌استرپی
+        li.style.listStyle = "none";
+        li.innerHTML = `
+            <a href="#" class="text-decoration-none text-dark d-block category-link" data-slug="${item.slug}">
+                <i class="fa fa-chevron-left small me-2 text-muted"></i>
+                <span class="fw-bold">${item.title}</span>
+            </a>
+        `;
+        fragment.appendChild(li);
+    });
+
+    navContainer.appendChild(fragment);
+}
+
+/**
+ * رندر کارت‌های محصولات (۶ در هر ردیف)
+ */
+export function renderProducts(products) {
+    const app = document.getElementById("app");
+    if (!app) return;
+
+    if (!products || products.length === 0) {
+        app.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <img src="img/no-product.png" style="width:100px; opacity:0.5" />
+                <p class="mt-3 text-muted font-vazir">محصولی در این دسته یافت نشد</p>
+            </div>
+        `;
+        return;
+    }
+
+    // استفاده از row مستقیم و g-3 برای فاصله استاندارد
+    app.innerHTML = `
+        <div class="row g-3 w-100 m-0">
+            ${products.map(p => `
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <div class="product-card card h-100 border-0 shadow-sm rounded-4 p-2 clickable-product" data-id="${p.id}">
+                        <div class="product-card__img text-center p-2">
+                            <img alt="${p.title}" src='${p.thumbnail}' class="img-fluid rounded-3" style="height: 140px; object-fit: contain;"/>
+                        </div>
+                        <div class="card-body p-2 d-flex flex-column text-center">
+                            <h6 class="product-card__title fw-bold text-truncate mb-2" title="${p.title}">
+                                ${p.title}
+                            </h6>
+                            <div class="product-card__price text-danger fw-bold mt-auto small">
+                                ${Number(p.price || 0).toLocaleString()} <small>تومان</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join("")}
+        </div>
+    `;
+
+    // اضافه کردن قابلیت کلیک روی کارت‌ها
+    initProductClicks();
+}
+
+
+// ۴. رندر کردن صفحه جزئیات محصول به صورت Pro-grade
+export function renderProductDetail(product) {
+    const app = document.getElementById("app");
+    
+    // مخفی کردن دکمه فیلترها و سایدبار در صورت لزوم، یا رندر تمیز در بخش اصلی
+    app.innerHTML = `
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white animate__animated animate__fadeIn">
+                <button id="backToListBtn" class="btn btn-outline-secondary rounded-pill mb-4 btn-sm align-self-start">
+                    <i class="fa fa-arrow-right me-2"></i> بازگشت به لیست محصولات
+                </button>
+                
+                <div class="row g-4 align-items-center">
+                    <div class="col-md-5 text-center">
+                        <img src="${product.thumbnail}" alt="${product.title}" class="img-fluid rounded-4 shadow-sm" style="max-height: 350px; object-fit: contain; width: 100%;">
+                    </div>
+                    <div class="col-md-7 d-flex flex-column justify-content-between">
+                        <div>
+                            <h2 class="fw-bold mb-3">${product.title}</h2>
+                            <p class="text-muted leading-relaxed mb-4">${product.description || 'توضیحات مفصلی برای این محصول ثبت نشده است.'}</p>
+                        </div>
+                        <div class="border-top pt-3 d-flex align-items-center justify-content-between mt-4">
+                            <div>
+                                <span class="text-muted small d-block">قیمت مصرف‌کننده:</span>
+                                <span class="text-danger fw-extrabold h3">${Number(product.price).toLocaleString()}</span> <small class="text-danger">تومان</small>
+                            </div>
+                            <button class="btn btn-primary btn-lg rounded-pill px-4" id="addToCartDetailBtn" data-id="${product.id}">
+                                <i class="fa fa-shopping-cart me-2"></i> افزودن به سبد خرید
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // دکمه بازگشت به لیست
+    document.getElementById("backToListBtn").addEventListener("click", loadProducts);
+}
+
+/**
+ * مدیریت کلیک روی هر محصول
+ */
+function initProductClicks() {
+    const productCards = document.querySelectorAll('.clickable-product');
+    productCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const productId = this.getAttribute('data-id');
+            
+            // انتشار یک Event سفارشی یا فراخوانی مستقیم تابع نمایش جزئیات
+            // پیشنهاد: استفاده از CustomEvent برای رعایت معماری ماژولار
+            window.dispatchEvent(new CustomEvent('showProductDetails', { 
+                detail: { id: productId } 
+            }));
+        });
+    });
+}

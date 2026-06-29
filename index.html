@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>فروشگاه</title>
 
-    <link rel="stylesheet" href="css/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/bootstrap-reboot.min.css" />
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="./css/bootstrap.css" />
+    <link rel="stylesheet" href="./css/style.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <script defer type="module" src="script/main.js"></script>
+
 </head>
 <body>
 
@@ -29,11 +30,13 @@
                     <span id="cartCount" class="cart-count">0</span>
                 </button>
 
-               <div id="authArea" class="auth-area">
+<div id="authArea" class="auth-area">
     <div id="guestBox" class="guest-box">
-        <button id="openLoginBtn" class="auth-toggle-btn" >ورود</button>
-        <button id="openRegisterBtn" class="auth-toggle-btn secondary">ثبت‌نام</button>
+        <button id="openLoginBtn" class="auth-toggle-btn"><a href="login.html"></a>ورود</button>
+        <button id="openRegisterBtn" class="auth-toggle-btn secondary"><a href="register.html"></a>ثبت‌نام</button>
     </div>
+</div>
+
 
     <div id="userBox" class="user-box hidden">
         <span class="welcome-text">وارد شده‌اید</span>
@@ -49,18 +52,12 @@
     <nav class="sub-nav">
         <div class="container">
             <ul class="menu-list">
-                <li class="menu-item categories">
+                <li class="menu-item categories nav-item">
                     <strong>گروه محصولات</strong>
-                    <div class="mega-menu">
-                        <ul>
-                            <li><a href="#/" data-category="all">همه محصولات</a></li>
-                            <li><a href="#/" data-category="laptop">لپ‌تاپ </a></li>
-                            <li><a href="#/" data-category="mobile">موبایل </a></li>
-                          
-                          
-                        </ul>
-                    </div>
-                </li>
+                     <ul class="submenu" id="submenu-category"> 
+
+    </ul>
+</li>
                 <li class="menu-item"><a href="#/">محصولات</a></li>
                 <li class="menu-item"><a href="#/cart">سبد خرید</a></li>
             </ul>
@@ -109,7 +106,5 @@
 
     <div id="cartDrawer" class="cart-drawer hidden"></div>
     <div id="toastBox" class="toast-box"></div>
-
-    <scrip type="module" src="js/main.js"></script>
 </body>
 </html>
