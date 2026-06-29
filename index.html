@@ -1,22 +1,29 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>فروشگاه</title>
 
     <link rel="stylesheet" href="./css/bootstrap.css" />
-    <link rel="stylesheet" href="./css/style.css"/>
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/slider.css" />
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-        <script defer type="module" src="script/main.js"></script>
+    <script defer type="module" src="api/main.js"></script>
+    <script defer type="module" src="js/sider.js"></script>
+
 
 </head>
+
 <body>
 
     <header class="main-header">
         <div class="container header-row">
             <a href="." class="logo">
-               <img src="img/91bf0b86-863d-42b2-8ec4-ad10cfdbd6a6.png" style="width: 50px;" alt="logo" class="logo__img">
+                <img src="img/91bf0b86-863d-42b2-8ec4-ad10cfdbd6a6.png" style="width: 50px;" alt="logo"
+                    class="logo__img">
             </a>
 
             <div class="search-bar">
@@ -30,22 +37,23 @@
                     <span id="cartCount" class="cart-count">0</span>
                 </button>
 
-<div id="authArea" class="auth-area">
-    <div id="guestBox" class="guest-box">
-        <button id="openLoginBtn" class="auth-toggle-btn"><a href="login.html"></a>ورود</button>
-        <button id="openRegisterBtn" class="auth-toggle-btn secondary"><a href="register.html"></a>ثبت‌نام</button>
-    </div>
-</div>
+                <div id="authArea" class="auth-area">
+                    <div id="guestBox" class="guest-box">
+                        <button id="openLoginBtn" class="auth-toggle-btn"><a href="login.html"></a>ورود</button>
+                        <button id="openRegisterBtn" class="auth-toggle-btn secondary"><a
+                                href="register.html"></a>ثبت‌نام</button>
+                    </div>
+                </div>
 
 
-    <div id="userBox" class="user-box hidden">
-        <span class="welcome-text">وارد شده‌اید</span>
-        <button id="logoutBtn" class="logout-btn">خروج</button>
-    </div>
-</div>
-
+                <div id="userBox" class="user-box hidden">
+                    <span class="welcome-text">وارد شده‌اید</span>
+                    <button id="logoutBtn" class="logout-btn">خروج</button>
                 </div>
             </div>
+
+        </div>
+        </div>
         </div>
     </header>
 
@@ -54,17 +62,83 @@
             <ul class="menu-list">
                 <li class="menu-item categories nav-item">
                     <strong>گروه محصولات</strong>
-                     <ul class="submenu" id="submenu-category"> 
+                    <ul class="submenu" id="submenu-category">
 
-    </ul>
-</li>
+                    </ul>
+                </li>
                 <li class="menu-item"><a href="#/">محصولات</a></li>
                 <li class="menu-item"><a href="#/cart">سبد خرید</a></li>
             </ul>
         </div>
     </nav>
 
+    <div class="container-fluid">
+<section class="testimonial-section2">
+ <div class="row text-center">
+           <div class="col-12">
+              <div class="h2"></div>
+           </div>
+        </div>
+       <div id="testim" class="testim">
+
+<!--         <div class="testim-cover"> -->
+            <div class="wrap">
+
+                <span id="right-arrow" class="arrow right fa fa-chevron-right"></span>
+                <span id="left-arrow" class="arrow left fa fa-chevron-left "></span>
+                <ul id="testim-dots" class="dots">
+                    <li class="dot active"></li><!--
+                    --><li class="dot"></li><!--
+                    --><li class="dot"></li><!--
+                    --><li class="dot"></li><!--
+                    --><li class="dot"></li>
+                </ul>
+                <div id="testim-content" class="cont">                    
+                    <div class="active">
+                        <div class="img"><img src="img/PSBOX-3.jpg" alt=""></div>
+                        <div class="h4">لپ تاپ</div>
+                        <p></p>                    
+                    </div>
+
+                    <div>
+                        <div class="img"><img src="img/02-min.jpg" alt=""></div>
+                        <div class="h4">صوتی و تصویری</div>
+                        <p></p>                    
+                    </div>
+
+                    <div>
+                        <div class="img"><img src="img/91bf0b86-863d-42b2-8ec4-ad10cfdbd6a6.png" alt=""></div>
+                         <div class="h4">درباره ما</div>
+                        <p>AG با هدف ارائه بهترین لوازم صوتی و تصویری، تجربه‌ای مطمئن و ساده از خرید آنلاین را برای شما فراهم کرده است.
+  ما تلاش می‌کنیم محصولات باکیفیت، قیمت مناسب و اطلاعات دقیق را در اختیار کاربران قرار دهیم تا انتخابی بهتر و آگاهانه‌تر داشته باشند.
+
+</p>                    
+                    </div>
+
+                    <div>
+                        <div class="img"><img src="img/Apple-iPhone-16-Pro-hero-geo-240909-lp.jpg.landing-big_2x.jpg" alt=""></div>
+                        <div class="h4">موبایل </div>
+                        <p> </p>                    
+                    </div>
+
+                    <div>
+                        <div class="img"><img src="img/PSBOX-2-1024x351.jpg" alt=""></div>
+                        <div class="h4">گیمینگ</div>
+                        <p></p>                    
+                    </div>
+
+                </div>
+                 </div>
+            </div>
+<!--         </div> -->
+    </section>
+
+    </div>
+
     <main class="container main-content">
+
+
+
         <aside class="sidebar">
             <h3>فیلترها</h3>
 
@@ -102,9 +176,13 @@
 
             <div id="pagination" class="pagination"></div>
         </section>
+
+
+
     </main>
 
     <div id="cartDrawer" class="cart-drawer hidden"></div>
     <div id="toastBox" class="toast-box"></div>
 </body>
+
 </html>

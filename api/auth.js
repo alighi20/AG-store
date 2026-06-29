@@ -1,6 +1,6 @@
 import { apiLogin } from "./api.js";
 import { setState, getState } from "./store.js";
-import { showToast, renderAuthState } from "./ui.js";
+import { showToast, renderAuthState } from "../js/ui.js";
 
 export function getToken() {
     return getState().token;
