@@ -26,6 +26,9 @@ const AUTH_CREDENTIALS = {
   password: "ali1383",
 };
 
+
+
+
 async function authenticate() {
   console.log("[AUTH] Calling /Authenticate ...");
 
