@@ -10,11 +10,6 @@ const API_BASE_URL = "https://api.apitester.ir/api";
 const SHOP_CODE = "1a881749-a3b6-4dad-3f26-08decb8b3712";
 
 
-const DEFAULT_TOKEN =
-  "Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyR3VpZCI6IjY5MTE1YWRiLTk0M2MtNDZlZS05OWE1LWQ4ZGIzMmQyNDNiNyIsInNob3BDb2RlIjoiMWE4ODE3NDktYTNiNi00ZGFkLTNmMjYtMDhkZWNiOGIzNzEyIiwiVGltZU91dC1NaW51dGUiOiI2MCIsIm5iZiI6MTc4MjgyMTU4NCwiZXhwIjoxNzgyODI1MTg0LCJpYXQiOjE3ODI4MjE1ODR9.GDcmg4DlqhzYAX_3Hp7xJmgSGmxw0bLKlpa2vF2VOOI";
-
-const token = localStorage.getItem("auth_token") || DEFAULT_TOKEN;
-
 
 const STORAGE_KEYS = {
   slides: "app_slides",
