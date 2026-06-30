@@ -10,7 +10,7 @@ const API_BASE_URL = "https://api.apitester.ir/api";
 const SHOP_CODE = "1a881749-a3b6-4dad-3f26-08decb8b3712";
 
 const DEFAULT_TOKEN =
-  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyR3VpZCI6IjY5MTE1YWRiLTk0M2MtNDZlZS05OWE1LWQ4ZGIzMmQyNDNiNyIsInNob3BDb2RlIjoiMWE4ODE3NDktYTNiNi00ZGFkLTNmMjYtMDhkZWNiOGIzNzEyIiwiVGltZU91dC1NaW51dGUiOiI2MCIsIm5iZiI6MTc4MjczMjk1MywiZXhwIjoxNzgyNzM2NTUzLCJpYXQiOjE3ODI3MzI5NTN9.u2P30GB-IvuZ1uIzVTICeYZ-OSP-t36yZrRveJuUosw";
+  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyR3VpZCI6IjY5MTE1YWRiLTk0M2MtNDZlZS05OWE1LWQ4ZGIzMmQyNDNiNyIsInNob3BDb2RlIjoiMWE4ODE3NDktYTNiNi00ZGFkLTNmMjYtMDhkZWNiOGIzNzEyIiwiVGltZU91dC1NaW51dGUiOiI2MCIsIm5iZiI6MTc4MjgwMzI0MiwiZXhwIjoxNzgyODA2ODQyLCJpYXQiOjE3ODI4MDMyNDJ9.STO0Zm2yPE2-Iw6Owly1YXTYZZAnH7S1kZXP3eauWcw";
 
 const token = localStorage.getItem("auth_token") || DEFAULT_TOKEN;
 
@@ -18,6 +18,8 @@ const STORAGE_KEYS = {
   slides: "app_slides",
   products: "app_products",
   categories: "app_categories",
+   token: "auth_token",         // اضافه شد
+  refreshToken: "refresh_token" // اضافه شد
 };
 
 const state = {
@@ -142,7 +144,7 @@ async function loadProducts() {
       {
         method: "POST",
         body: JSON.stringify({
-          size: 24,
+          size: 10,
           page: 1,
           shopCode: SHOP_CODE,
         }),
