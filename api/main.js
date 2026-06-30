@@ -11,7 +11,6 @@ const SHOP_CODE = "1a881749-a3b6-4dad-3f26-08decb8b3712";
 
 
 
-
 const STORAGE_KEYS = {
   slides: "app_slides",
   products: "app_products",
@@ -27,6 +26,9 @@ const AUTH_CREDENTIALS = {
   userName: "aligh20",
   password: "ali1383",
 };
+
+
+
 
 async function authenticate() {
   console.log("[AUTH] Calling /Authenticate ...");
