@@ -14,6 +14,11 @@
     <script defer type="module" src="api/main.js"></script>
     <script defer type="module" src="js/sider.js"></script>
 
+   <!-- Swiper CSS -->
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+   <!-- Swiper JS -->
+    <link rel="stylesheet" href="./css/cheapAndExpensiveSlider.css">
+   
 
 </head>
 
@@ -137,6 +142,36 @@
 
     </div>
 
+    <div class="container my-4">
+    <!-- کانتینر اصلی با پس‌زمینه قرمز -->
+    <div class="cheap-products-container">
+        
+        <!-- بخش اسلایدر محصولات (سمت چپ) -->
+        <div class="cheap-slider-wrapper">
+            <div class="swiper cheap-products-slider">
+                <div class="swiper-wrapper" id="cheap-products-wrapper">
+                    <!-- اسلایدها با جاوااسکریپت اینجا تزریق می‌شوند -->
+                </div>
+            </div>
+            <!-- دکمه‌های کنترل اسلایدر (خارج از swiper-wrapper ولی داخل کانتینر اسلایدر) -->
+            <div class="swiper-button-prev cheap-slider-prev"></div>
+            <div class="swiper-button-next cheap-slider-next"></div>
+        </div>
+
+        <!-- بخش عنوان و دکمه مشاهده همه (سمت راست) -->
+        <div class="cheap-info-box">
+            <h3 class="cheap-title">ارزان‌ترین‌ها</h3>
+            <a href="#" class="cheap-view-all">مشاهده همه</a>
+        </div>
+
+    </div>
+</div>
+
+
+
+
+
+
     <main class="container main-content">
 
 
@@ -185,6 +220,83 @@
 
     <div id="cartDrawer" class="cart-drawer hidden"></div>
     <div id="toastBox" class="toast-box"></div>
+
+    <div class="container my-4">
+    <!-- کانتینر اصلی -->
+    <div class="expensive-products-container">
+        
+        <!-- اسلایدر محصولات -->
+        <div class="expensive-slider-wrapper">
+            <div class="swiper expensive-products-slider">
+                <div class="swiper-wrapper" id="expensive-products-wrapper">
+                    <!-- اسلایدها با JS اینجا ساخته می‌شوند -->
+                </div>
+            </div>
+
+            <!-- دکمه‌های اسلایدر -->
+            <div class="swiper-button-prev expensive-slider-prev"></div>
+            <div class="swiper-button-next expensive-slider-next"></div>
+        </div>
+
+        <!-- باکس عنوان -->
+        <div class="expensive-info-box">
+            <h3 class="expensive-title">لوکس ترین ها</h3>
+            <a href="#" class="expensive-view-all">مشاهده همه</a>
+        </div>
+
+    </div>
+</div>
+
+<footer class="main-footer">
+    <div class="footer-container">
+        <div class="footer-row">
+            
+            <!-- بخش اطلاعات و برند (راست) -->
+            <div class="footer-col footer-info">
+                <div class="footer-brand-header">
+                    <img src="img/91bf0b86-863d-42b2-8ec4-ad10cfdbd6a6.png" alt="لوگو دستیارینو" class="logo__img" style="width: 50px;">
+                    <h3 class="footer-brand-title">دستیارینو</h3>
+                </div>
+                
+                <p class="footer-desc">
+                    دستیارینو، پلتفرم یکپارچه دستیار هوشمند فارسی سازمانی با هوش مصنوعی مولد
+                </p>
+                
+                <div class="footer-socials">
+                    <a href="#" class="social-icon" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="social-icon" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
+                    <a href="#" class="social-icon" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                    <a href="#" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+
+            <!-- ستون موقعیت مکانی (نقشه) -->
+<div class="footer-col footer-map-col">
+    <h4 class="footer-col-title">موقعیت ما روی نقشه</h4>
+    <div class="footer-map-wrapper">
+        <!-- مختصات روی محله سعادت آباد تنظیم شده است -->
+        <iframe 
+            src="https://maps.google.com/maps?q=Saadat%20Abad,%20Tehran&t=&z=14&ie=UTF8&iwloc=&output=embed" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade"
+            title="نقشه سعادت آباد">
+        </iframe>
+    </div>
+</div>
+
+
+            <!-- سایر ستون‌های فوتر (مثلا لینک‌های مفید) می‌توانند اینجا اضافه شوند -->
+            
+        </div>
+    </div>
+</footer>
+
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 </body>
 
 </html>
