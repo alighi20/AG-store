@@ -17,6 +17,7 @@ const STORAGE_KEYS = {
   categories: "app_categories",
   token: "auth_token",
   refreshToken: "refresh_token",
+  cheapProducts: "cheap_products"
 };
 
 let token = localStorage.getItem(STORAGE_KEYS.token) || null;
@@ -143,7 +144,7 @@ async function init() {
   }
 
   // ۲. بارگذاری داده‌ها (که خودشان اول کش را چک می‌کنند)
-  await Promise.allSettled([loadCategories(), loadProducts()]);
+  await Promise.allSettled([loadCategories(), loadProducts(),loadCheapProducts(),loadExpensiveProducts()]);
 }
 
 
@@ -358,6 +359,169 @@ function renderFilteredProducts() {
 
   renderProducts(filteredProducts);
 }
+
+async function loadCheapProducts() {
+  // ۱. چک کردن کش
+  const cachedCheap = readStorage(STORAGE_KEYS.cheapProducts);
+
+  if (cachedCheap && cachedCheap.length > 0) {
+    console.log("[CHEAP] Loaded from Cache");
+    renderCheapProductsSlider(cachedCheap);
+    return;
+  }
+
+  // ۲. دریافت از API جدید
+  console.log("[CHEAP] Fetching from API...");
+  try {
+    const result = await request(
+      `${API_BASE_URL}/Product/GetTheFreeProducts/5/${SHOP_CODE}`,
+      { method: "GET" }
+    );
+
+    const products = getApiData(result);
+
+    // ذخیره در کش
+    writeStorage(STORAGE_KEYS.cheapProducts, products);
+    
+    // رندر اسلایدر
+    renderCheapProductsSlider(products);
+  } catch (error) {
+    console.error("خطا در بارگذاری ارزان‌ترین‌ها:", error);
+  }
+}
+
+
+async function loadExpensiveProducts() {
+  // ۱. چک کردن کش
+  const cachedExpensive = readStorage(STORAGE_KEYS.expensiveProducts);
+
+  if (cachedExpensive && cachedExpensive.length > 0) {
+    console.log("[EXPENSIVE] Loaded from Cache");
+    renderExpensiveProductsSlider(cachedExpensive);
+    return;
+  }
+
+  // ۲. دریافت از API جدید
+  console.log("[Expensive] Fetching from API...");
+  try {
+    const result = await request(
+      `${API_BASE_URL}/Product/GetTheExpensiveProducts/5/${SHOP_CODE}`,
+      { method: "GET" }
+    );
+
+    const products = getApiData(result);
+
+    // ذخیره در کش
+    writeStorage(STORAGE_KEYS.expensiveProducts, products);
+    
+    // رندر اسلایدر
+    renderExpensiveProductsSlider(products);
+  } catch (error) {
+    console.error("خطا در بارگذاری گران ترین ها:", error);
+  }
+}
+
+
+function renderCheapProductsSlider(products) {
+    const wrapper = document.getElementById('cheap-products-wrapper');
+    if (!wrapper) return;
+
+    // ۱. مرتب‌سازی از ارزان‌ترین به گران‌ترین
+    const sortedProducts = [...products].sort((a, b) => a.price - b.price);
+
+    // ۲. تولید HTML اسلایدها (اضافه شدن رویداد کلیک و استایل نشانگر موس)
+    wrapper.innerHTML = sortedProducts.map(product => `
+        <div class="swiper-slide">
+            <div class="product-card-mini" 
+                 style="cursor: pointer;" 
+                 onclick="window.dispatchEvent(new CustomEvent('showProductDetails', { detail: { id: ${product.id} } }))">
+                <img src="${product.thumbnail}" alt="${product.title}">
+                <div class="product-name">${product.title}</div>
+                <div class="product-price">${product.price.toLocaleString()} تومان</div>
+            </div>
+        </div>
+    `).join('');
+
+    // ۳. راه‌اندازی Swiper با تاخیر کوچک جهت اطمینان از رندر کامل DOM
+    setTimeout(() => {
+        if (window.cheapSliderInstance) {
+            window.cheapSliderInstance.destroy(true, true);
+        }
+
+        window.cheapSliderInstance = new Swiper('.cheap-products-slider', {
+            slidesPerView: 1,
+            spaceBetween: 15,
+            loop: sortedProducts.length > 4, // فعال‌سازی لوپ فقط در صورت کافی بودن تعداد محصولات
+            navigation: {
+                nextEl: '.cheap-slider-next',
+                prevEl: '.cheap-slider-prev',
+            },
+            observer: true,
+            observeParents: true,
+            breakpoints: {
+                480: { slidesPerView: 2 },
+                768: { slidesPerView: 3 },
+                1024: { slidesPerView: 4 }
+            },
+            rtl: true
+        });
+    }, 50);
+}
+
+
+function renderExpensiveProductsSlider(products) {
+    const wrapper = document.getElementById('expensive-products-wrapper');
+    if (!wrapper) return;
+
+    const sortedProducts = [...products].sort((a, b) => b.price - a.price);
+
+    wrapper.innerHTML = sortedProducts.map(product => `
+        <div class="swiper-slide">
+            <div class="product-card-mini"
+                 style="cursor:pointer"
+                 onclick="window.dispatchEvent(new CustomEvent('showProductDetails',{detail:{id:${product.id}}}))">
+                 
+                <img src="${product.thumbnail}" alt="${product.title}">
+                
+                <div class="product-name">
+                    ${product.title}
+                </div>
+
+                <div class="product-price">
+                    ${Number(product.price).toLocaleString()} تومان
+                </div>
+
+            </div>
+        </div>
+    `).join('');
+
+    if (window.expensiveSliderInstance) {
+        window.expensiveSliderInstance.destroy(true, true);
+    }
+
+    window.expensiveSliderInstance = new Swiper('.expensive-products-slider', {
+        slidesPerView: 1,
+        spaceBetween: 15,
+        navigation: {
+            nextEl: '.expensive-slider-next',
+            prevEl: '.expensive-slider-prev',
+        },
+        breakpoints: {
+            480: { slidesPerView: 2 },
+            768: { slidesPerView: 3 },
+            1024: { slidesPerView: 4 }
+        },
+        rtl: true
+    });
+}
+
+
+
+
+
+
+
+
 
 function setProductsLoading() {
   const app = document.getElementById("app");

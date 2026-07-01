@@ -616,3 +616,158 @@ img {
         min-height: auto;
     }
 }
+
+
+/* تنظیمات پایه فوتر */
+.main-footer {
+    background-color: #ffffff;
+    padding: 60px 0 30px;
+    border-top: 1px solid #eaeaea;
+    direction: rtl;
+    font-family: 'Vazirmatn', sans-serif;
+}
+
+/* کانتینر برای محدود کردن عرض و وسط‌چین کردن کل فوتر */
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.footer-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start; /* در حالت RTL به طور خودکار از راست شروع می‌شود */
+    gap: 40px;
+}
+
+.footer-col {
+    flex: 1;
+    min-width: 250px;
+}
+
+/* تنظیمات ستون راست (اطلاعات برند) */
+.footer-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* تراز سمت راست در RTL */
+}
+
+.footer-brand-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.footer-logo-img {
+    width: 55px;
+    height: auto;
+    border-radius: 8px; /* اگر لوگو پس‌زمینه دارد زیباتر می‌شود */
+}
+
+.footer-brand-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #222;
+    margin: 0;
+}
+
+.footer-desc {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.8;
+    margin-bottom: 25px;
+    max-width: 350px;
+    text-align: right;
+}
+
+/* شبکه‌های اجتماعی */
+.footer-socials {
+    display: flex;
+    gap: 12px;
+}
+
+.social-icon {
+    width: 38px;
+    height: 38px;
+    background-color: #f5f5f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+    font-size: 16px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+    background-color: #333; /* رنگ هاور مدرن */
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* واکنش‌گرایی برای موبایل */
+@media (max-width: 768px) {
+    .footer-row {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .footer-info {
+        align-items: center; /* در موبایل همه چیز وسط‌چین شود */
+        text-align: center;
+    }
+
+    .footer-desc {
+        text-align: center;
+    }
+
+     .footer-map-col {
+        align-items: center; /* وسط‌چین کردن عنوان نقشه در موبایل */
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    .footer-map-wrapper {
+        max-width: 100%; /* در موبایل تمام عرض را پر کند */
+        height: 200px;
+    }
+}
+
+
+/* عنوان ستون‌های فوتر */
+.footer-col-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #222;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+/* تنظیمات ستون نقشه */
+.footer-map-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* راست‌چین در RTL */
+}
+
+/* نگهدارنده نقشه برای اعمال استایل‌های Pro-grade */
+.footer-map-wrapper {
+    width: 100%;
+    max-width: 380px; /* جلوگیری از کشیدگی بیش از حد در دسکتاپ */
+    height: 180px;
+    border-radius: 12px;
+    overflow: hidden; /* باعث می‌شود iframe از گوشه‌های گرد بیرون نزند */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eaeaea;
+    background-color: #f9f9f9;
+}
+
+.footer-map-wrapper iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
