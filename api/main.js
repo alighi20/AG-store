@@ -3,6 +3,7 @@ import {
   renderProducts,
   renderProductDetail,
   renderSlider,
+  
 } from "../js/ui.js";
 
 const API_BASE_URL = "https://api.apitester.ir/api";
@@ -426,23 +427,37 @@ function renderCheapProductsSlider(products) {
     const wrapper = document.getElementById('cheap-products-wrapper');
     if (!wrapper) return;
 
-    // ۱. مرتب‌سازی از ارزان‌ترین به گران‌ترین
     const sortedProducts = [...products].sort((a, b) => a.price - b.price);
 
-    // ۲. تولید HTML اسلایدها (اضافه شدن رویداد کلیک و استایل نشانگر موس)
     wrapper.innerHTML = sortedProducts.map(product => `
         <div class="swiper-slide">
             <div class="product-card-mini" 
                  style="cursor: pointer;" 
                  onclick="window.dispatchEvent(new CustomEvent('showProductDetails', { detail: { id: ${product.id} } }))">
+                
                 <img src="${product.thumbnail}" alt="${product.title}">
+                
                 <div class="product-name">${product.title}</div>
-                <div class="product-price">${product.price.toLocaleString()} تومان</div>
+                
+                <div class="product-price">
+                    ${product.price.toLocaleString()} تومان
+                </div>
+
+                <!-- دکمه سبد خرید -->
+                <button 
+                    style="margin-top:10px"
+                    onclick='event.stopPropagation(); addToCart({
+                        id: ${product.id},
+                        name: "${product.title}",
+                        price: ${product.price}
+                    })'>
+                    🛒 افزودن به سبد
+                </button>
+
             </div>
         </div>
     `).join('');
 
-    // ۳. راه‌اندازی Swiper با تاخیر کوچک جهت اطمینان از رندر کامل DOM
     setTimeout(() => {
         if (window.cheapSliderInstance) {
             window.cheapSliderInstance.destroy(true, true);
@@ -451,7 +466,7 @@ function renderCheapProductsSlider(products) {
         window.cheapSliderInstance = new Swiper('.cheap-products-slider', {
             slidesPerView: 1,
             spaceBetween: 15,
-            loop: sortedProducts.length > 4, // فعال‌سازی لوپ فقط در صورت کافی بودن تعداد محصولات
+            loop: sortedProducts.length > 4,
             navigation: {
                 nextEl: '.cheap-slider-next',
                 prevEl: '.cheap-slider-prev',
