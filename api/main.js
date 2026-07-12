@@ -132,10 +132,11 @@ async function init() {
 
   bindEvents();
 
-  // ۱. مطمئن شدن از وجود توکن معتبر
-  if (!token) {
-    token = localStorage.getItem(STORAGE_KEYS.token);
+  // 🔥 این خط مهمه
+  if (typeof updateCartCount === "function") {
+    updateCartCount();
   }
+
   if (!token) {
     try {
       await authenticate(); // لاگین خودکار با یوزر و پس هاردکد شده
@@ -429,34 +430,29 @@ function renderCheapProductsSlider(products) {
 
     const sortedProducts = [...products].sort((a, b) => a.price - b.price);
 
-    wrapper.innerHTML = sortedProducts.map(product => `
-        <div class="swiper-slide">
-            <div class="product-card-mini" 
-                 style="cursor: pointer;" 
-                 onclick="window.dispatchEvent(new CustomEvent('showProductDetails', { detail: { id: ${product.id} } }))">
-                
-                <img src="${product.thumbnail}" alt="${product.title}">
-                
-                <div class="product-name">${product.title}</div>
-                
-                <div class="product-price">
-                    ${product.price.toLocaleString()} تومان
-                </div>
+wrapper.innerHTML = sortedProducts.map(product => `
+    <div class="swiper-slide">
+        <div class="product-card-mini"
+            style="cursor: pointer;"
+            onclick="window.dispatchEvent(new CustomEvent('showProductDetails', { detail: { id: ${product.id} } }))">
 
-                <!-- دکمه سبد خرید -->
-                <button 
-                    style="margin-top:10px"
-                    onclick='event.stopPropagation(); addToCart({
-                        id: ${product.id},
-                        name: "${product.title}",
-                        price: ${product.price}
-                    })'>
-                    🛒 افزودن به سبد
-                </button>
+            <img src="${product.thumbnail}" alt="${product.title}">
+            <div class="product-name">${product.title}</div>
+            <div class="product-price">${product.price.toLocaleString()} تومان</div>
 
-            </div>
+            <!-- 👇 اینجا اضافه کن -->
+            <button 
+                onclick='event.stopPropagation(); addToCart({
+                    id: ${product.id},
+                    name: "${product.title}",
+                    price: ${product.price}
+                })'>
+                🛒 افزودن به سبد
+            </button>
+
         </div>
-    `).join('');
+    </div>
+`).join('');
 
     setTimeout(() => {
         if (window.cheapSliderInstance) {
