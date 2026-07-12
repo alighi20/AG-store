@@ -648,12 +648,42 @@ function setProductDetailLoading() {
     `;
 }
 
+function bindAllProductsLink() {
+  const allProductsLink = document.getElementById('allProductsLink');
+  if (allProductsLink) {
+    allProductsLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      state.selectedCategoryId = "all";
+      state.currentPage = 1;
+      loadProducts(1);
+    });
+  }
+}
+
+function bindSliderCategoryEvent() {
+  window.addEventListener('categorySelected', (event) => {
+    const { categoryId } = event.detail;
+    state.selectedCategoryId = categoryId;
+    state.currentPage = 1;
+    state.searchTerm = "";
+    
+    loadProducts(1);
+    
+    // اسکرول به بخش محصولات
+    setTimeout(() => {
+      document.getElementById("app")?.scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+  });
+}
+
 function bindEvents() {
   bindProductDetailsEvent();
   bindBackToProductsEvent();
   bindCategoryEvent();
   bindSearchEvent();
   bindPaginationEvent();
+  bindAllProductsLink();
+  bindSliderCategoryEvent();
 }
 
 function bindProductDetailsEvent() {
