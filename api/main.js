@@ -122,6 +122,9 @@ const state = {
   slides: [],
   selectedCategoryId: null,
   searchTerm: "",
+  currentPage: 1,
+  pageSize: 10,
+  totalPages: 1
 };
 
 document.addEventListener("DOMContentLoaded", init);
@@ -277,48 +280,82 @@ async function loadCategories() {
   }
 }
 
-async function loadProducts() {
-  // ۱. بررسی وجود محصولات در کش localStorage
-  const cachedProducts = readStorage(STORAGE_KEYS.products);
+async function loadProducts(page = 1) {
+  state.currentPage = page;
+  
+  // ۱. اضافه کردن آیدی دسته‌بندی به کلید کش
+  // اگر selectedCategoryId مقدار 'all' بود، کش کلی در نظر گرفته می‌شود
+  const cacheKey = `${STORAGE_KEYS.products}_cat_${state.selectedCategoryId}_page_${page}`;
+  
+  const cachedProducts = readStorage(cacheKey);
+if (cachedProducts && cachedProducts.length > 0) {
+    console.log(`[PRODUCTS] Page ${page} (Cat: ${state.selectedCategoryId}) Loaded from Cache`);
+    state.products = cachedProducts.products || cachedProducts;
+    
+    // اگر total هم در کش ذخیره شده باشد
+    if (cachedProducts.total !== undefined) {
+        state.totalPages = Math.ceil(cachedProducts.total / state.pageSize) || 1;
+    }
+    
+    renderFilteredProducts();
+    renderPagination(); 
+    return;
+}
 
-  if (cachedProducts && cachedProducts.length > 0) {
-    console.log("[PRODUCTS] Loaded from Cache (Local Storage)");
-    state.products = cachedProducts;
-    renderFilteredProducts(); // رندر محصولات بر اساس فیلتر/جستجو
-    return; // خروج از تابع؛ نیازی به درخواست API نیست
-  }
 
-  // ۲. اگر کش خالی بود، لودینگ نشان داده و درخواست به سرور ارسال می‌شود
   setProductsLoading();
-  console.log("[PRODUCTS] Cache empty. Fetching from API...");
+  console.log(`[PRODUCTS] Fetching Page ${page} (Cat: ${state.selectedCategoryId}) from API...`);
 
   try {
+    // آماده‌سازی Body برای ارسال به سرور
+    const requestBody = {
+      size: state.pageSize,
+      page: state.currentPage,
+      shopCode: SHOP_CODE,
+    };
+
+    // ۲. اگر دسته‌بندی خاصی انتخاب شده (به جز همه)، آن را به سرور می‌فرستیم
+    // نکته مهم: حتماً Swagger پروژه را چک کنید تا مطمئن شوید اسم این فیلد categoryId است (شاید groupId یا چیز دیگری باشد)
+    if (state.selectedCategoryId !== "all") {
+      requestBody.categoryId = Number(state.selectedCategoryId); 
+    }
+
     const result = await request(
       `${API_BASE_URL}/Product/GetProductWithPagination`,
       {
         method: "POST",
-        body: JSON.stringify({
-          size: 10,
-          page: 1,
-          shopCode: SHOP_CODE,
-        }),
-      },
+        body: JSON.stringify(requestBody),
+      }
     );
 
     const products = getApiData(result);
+    
+   const totalItems = result.total || 0;
+state.totalPages = Math.ceil(totalItems / state.pageSize) || 1;
+
+// جلوگیری از رفتن به صفحه‌ای که وجود نداره
+if (state.currentPage > state.totalPages) {
+  state.currentPage = state.totalPages;
+}
+
 
     state.products = products;
-    writeStorage(STORAGE_KEYS.products, products); // ذخیره در کش برای دفعات بعدی
+    writeStorage(cacheKey, { 
+    products: products, 
+    total: result.total || 0 
+});
+ 
     
     renderFilteredProducts();
+    renderPagination();
   } catch (error) {
     console.error("خطا در بارگذاری محصولات:", error);
-
     if (state.products.length === 0) {
       setProductsError("خطا در دریافت محصولات. لطفاً دوباره تلاش کنید.");
     }
   }
 }
+
 
 async function getProductById(id) {
   const result = await request(`${API_BASE_URL}/Product/GetProductById`, {
@@ -336,29 +373,80 @@ async function getProductById(id) {
 function renderFilteredProducts() {
   let filteredProducts = [...state.products];
 
-  if (state.selectedCategoryId) {
-    filteredProducts = filteredProducts.filter((product) => {
-      return (
-        String(
-          product.categoryId || product.categoryID || product.category?.id,
-        ) === String(state.selectedCategoryId)
-      );
-    });
-  }
-
+  // فیلتر جستجو (در صورتی که سرچ سمت کاربر باشد)
   if (state.searchTerm) {
     const term = state.searchTerm.trim().toLowerCase();
-
     filteredProducts = filteredProducts.filter((product) => {
       const title = String(product.title || "").toLowerCase();
       const description = String(product.description || "").toLowerCase();
-
       return title.includes(term) || description.includes(term);
     });
   }
 
   renderProducts(filteredProducts);
 }
+
+
+function renderPagination() {
+  const paginationContainer = document.getElementById("pagination-container");
+  if (!paginationContainer) return;
+
+  let html = `<nav aria-label="Product Pagination"><ul class="pagination justify-content-center" style="direction: rtl;">`;
+
+  // دکمه قبلی
+  html += `
+    <li class="page-item ${state.currentPage === 1 ? 'disabled' : ''}">
+      <a class="page-link" href="#" data-page="${state.currentPage - 1}">قبلی</a>
+    </li>
+  `;
+
+  // تولید شماره صفحات با حلقه for
+  for (let i = 1; i <= state.totalPages; i++) {
+    html += `
+      <li class="page-item ${i === state.currentPage ? 'active' : ''}">
+        <a class="page-link" href="#" data-page="${i}">${i}</a>
+      </li>
+    `;
+  }
+
+  // دکمه بعدی
+  html += `
+    <li class="page-item ${state.currentPage >= state.totalPages ? 'disabled' : ''}">
+      <a class="page-link" href="#" data-page="${state.currentPage + 1}">بعدی</a>
+    </li>
+  `;
+
+  html += `</ul></nav>`;
+  paginationContainer.innerHTML = html;
+
+  // فعال‌سازی رویدادها
+  bindPaginationEvent();
+}
+
+
+function bindPaginationEvent() {
+  document.addEventListener("click", (event) => {
+    // پیدا کردن دکمه صفحه‌بندی کلیک شده
+    const pageLink = event.target.closest(".page-link[data-page]");
+    if (!pageLink) return;
+
+    event.preventDefault();
+
+    const newPage = parseInt(pageLink.getAttribute("data-page"));
+    
+    // جلوگیری از کلیک روی صفحات نامعتبر
+    if (newPage > 0 && !event.target.parentElement.classList.contains("disabled")) {
+      loadProducts(newPage);
+      
+      // اسکرول نرم به بالای لیست محصولات
+      document.getElementById("app")?.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+}
+
+// این خط را داخل تابع bindEvents() موجود اضافه کنید:
+// bindPaginationEvent();
+
 
 async function loadCheapProducts() {
   // ۱. چک کردن کش
@@ -565,6 +653,7 @@ function bindEvents() {
   bindBackToProductsEvent();
   bindCategoryEvent();
   bindSearchEvent();
+  bindPaginationEvent();
 }
 
 function bindProductDetailsEvent() {
@@ -605,9 +694,14 @@ function bindCategoryEvent() {
     event.preventDefault();
 
     state.selectedCategoryId = categoryLink.dataset.categoryId;
-    renderFilteredProducts();
+    
+    // تغییر مهم: ریست کردن صفحه به 1 و فراخوانی محصولات از سرور
+    state.currentPage = 1;
+    loadProducts(1);
   });
 }
+
+
 
 function bindSearchEvent() {
   const searchInput = document.getElementById("searchInput");
