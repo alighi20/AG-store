@@ -771,3 +771,85 @@ img {
     height: 100%;
     border: none;
 }
+.toast-box {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 9999;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 250px;
+    background: #1e1e2f;
+    color: #fff;
+    padding: 14px 18px;
+    margin-top: 10px;
+    border-radius: 10px;
+    font-size: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+
+    opacity: 0;
+    transform: translateX(-120%);
+    transition: all 0.5s ease;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* نوع‌ها */
+.toast.success {
+    border-left: 5px solid #28a745;
+}
+
+.toast.error {
+    border-left: 5px solid #dc3545;
+}
+
+/* آیکون */
+.toast i {
+    font-size: 18px;
+}
+.cart-item {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.qty-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.qty-box button {
+    padding: 5px 10px;
+    border: none;
+    background: #007bff;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.remove-btn {
+    background: red;
+    color: #fff;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 5px;
+}
+
+.clear-btn {
+    background: black;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: none;
+}

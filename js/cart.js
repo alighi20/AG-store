@@ -20,8 +20,6 @@ function updateCartCount() {
     if (el2) el2.innerText = count;
 }
 function addToCart(product) {
-    console.log("ADD TO CART WORKED");
-
     let cart = getCart();
 
     let existing = cart.find(item => item.id === product.id);
@@ -34,6 +32,9 @@ function addToCart(product) {
 
     saveCart(cart);
     updateCartCount();
+
+    // 🔥 Toast خفن
+    showToast(`${product.name} به سبد اضافه شد 🛒`);
 }
 function increaseQty(id) {
     let cart = getCart();
@@ -79,6 +80,35 @@ function removeFromCart(id) {
     updateCartCount();
     renderCartPage();
 }
+function showToast(message, type = "success") {
+    const box = document.getElementById("toastBox");
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+
+    const icon = document.createElement("i");
+
+    if (type === "success") {
+        icon.className = "fa fa-check-circle";
+    } else {
+        icon.className = "fa fa-times-circle";
+    }
+
+    const text = document.createElement("span");
+    text.innerText = message;
+
+    toast.appendChild(icon);
+    toast.appendChild(text);
+
+    box.appendChild(toast);
+
+    setTimeout(() => toast.classList.add("show"), 100);
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 500);
+    }, 3000);
+}
 // 👇 اینجا اضافه کن
 function renderCartPage() {
     const container = document.getElementById("app");
@@ -100,27 +130,29 @@ function renderCartPage() {
         total += itemTotal;
 
         return `
-            <div style="border:1px solid #ddd; padding:15px; margin-bottom:10px; border-radius:10px;">
+            <div class="cart-item">
                 <h5>${item.name}</h5>
+
                 <p>قیمت: ${price.toLocaleString()} تومان</p>
 
-                <div>
+                <div class="qty-box">
                     <button onclick="decreaseQty(${item.id})">➖</button>
-                    <span style="margin:0 10px">${qty}</span>
+                    <span>${qty}</span>
                     <button onclick="increaseQty(${item.id})">➕</button>
                 </div>
 
                 <p>جمع: ${itemTotal.toLocaleString()} تومان</p>
 
-                <button onclick="removeFromCart(${item.id})" style="color:red;">
+                <button onclick="removeFromCart(${item.id})" class="remove-btn">
                     حذف ❌
                 </button>
             </div>
         `;
     }).join("") + `
         <hr>
-        <h4>جمع کل: ${total.toLocaleString()} تومان</h4>
-        <button onclick="clearCart()" style="background:red;color:white;padding:10px;border:none;border-radius:8px;">
+        <h3>جمع کل: ${total.toLocaleString()} تومان</h3>
+
+        <button onclick="clearCart()" class="clear-btn">
             🗑️ پاک کردن سبد
         </button>
     `;
@@ -132,3 +164,4 @@ window.removeFromCart = removeFromCart;
 window.increaseQty = increaseQty;
 window.decreaseQty = decreaseQty;
 window.clearCart = clearCart;
+window.renderCartPage = renderCartPage;

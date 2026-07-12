@@ -128,14 +128,18 @@ const state = {
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
-  console.log("App initialized");
+    console.log("App initialized");
 
-  bindEvents();
+    bindEvents();
 
-  // 🔥 این خط مهمه
-  if (typeof updateCartCount === "function") {
-    updateCartCount();
-  }
+    if (typeof updateCartCount === "function") {
+        updateCartCount();
+    }
+
+    // 🔥 اینا رو اضافه کن
+    handleRoute();
+    window.addEventListener("hashchange", handleRoute);
+}
 
   if (!token) {
     try {
@@ -147,7 +151,7 @@ async function init() {
 
   // ۲. بارگذاری داده‌ها (که خودشان اول کش را چک می‌کنند)
   await Promise.allSettled([loadCategories(), loadProducts(),loadCheapProducts(),loadExpensiveProducts()]);
-}
+
 
 
 
@@ -635,4 +639,16 @@ function bindSearchEvent() {
       renderFilteredProducts();
     }, 300);
   });
+}
+function handleRoute() {
+    const hash = location.hash;
+
+    console.log("Route:", hash);
+
+    if (hash === "#/cart") {
+        renderCartPage();
+        return;
+    }
+
+    renderProducts();
 }
