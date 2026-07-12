@@ -199,25 +199,15 @@ function initProductClicks() {
 /**
  * رندر اسلایدر
  */
+// === ui.js - جایگزین تابع renderSlider کن ===
 export function renderSlider(slides) {
-
-    console.log("renderSlider called", slides);
+    console.log("renderSlider called with categories:", slides);
 
     const container = document.querySelector(".testim .cont");
     const dotsContainer = document.querySelector(".testim .dots");
 
-    if (!container) {
-        console.error("Slider container not found (.testim .cont)");
-        return;
-    }
-
-    if (!dotsContainer) {
-        console.error("Slider dots not found (.testim .dots)");
-        return;
-    }
-
-    if (!slides || slides.length === 0) {
-        console.warn("No slides received");
+    if (!container || !dotsContainer) {
+        console.error("Slider container not found");
         return;
     }
 
@@ -225,45 +215,51 @@ export function renderSlider(slides) {
     dotsContainer.innerHTML = "";
 
     slides.forEach((slide, index) => {
-
-        // اصلاح خط ۲۲۷: اضافه کردن عملگر || برای جلوگیری از SyntaxError
         const image = slide.thumbnail || "";
-
-        // اصلاح: ادغام تعاریف تکراری title برای جلوگیری از Redeclaration Error
-        const title = slide.title || slide.name || slide.fileUrl || "بدون عنوان";
-
-        const description = slide.description || slide.text || "";
-
-        const link = slide.link || "#";
+        const title = slide.title || "بدون عنوان";
+        const categoryId = slide.id;
 
         const slideDiv = document.createElement("div");
-
-        if (index === 0) {
-            slideDiv.classList.add("active");
-        }
+        if (index === 0) slideDiv.classList.add("active");
 
         slideDiv.innerHTML = `
             <div class="img">
                 <img src="${image}" alt="${title}">
             </div>
-
             <div class="content-wrapper">
                 <h4 class="h4 mt-4">${title}</h4>
-                <a href="${link}" class="btn-buy">مشاهده و خرید</a>
+                <button class="btn-buy slider-category-btn" 
+                        data-category-id="${categoryId}">
+                    مشاهده محصولات این گروه
+                </button>
             </div>
         `;
 
         container.appendChild(slideDiv);
 
+        // dot
         const dot = document.createElement("span");
-
         dot.className = index === 0 ? "dot active" : "dot";
-
         dotsContainer.appendChild(dot);
-
     });
 
     initSliderNavigation();
+    initSliderCategoryClicks(); // کلیک برای فیلتر
+}
+
+/** اضافه کردن کلیک روی اسلایدرها */
+function initSliderCategoryClicks() {
+    const buttons = document.querySelectorAll('.slider-category-btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const categoryId = e.currentTarget.dataset.categoryId;
+            if (categoryId) {
+                window.dispatchEvent(new CustomEvent('categorySelected', {
+                    detail: { categoryId: categoryId }
+                }));
+            }
+        });
+    });
 }
 
 

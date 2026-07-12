@@ -66,32 +66,25 @@
 
 
     
-    <nav class="sub-nav">
-        <div class="container">
-            <ul class="menu-list">
-                <li class="menu-item categories nav-item">
-                    <strong>گروه محصولات</strong>
-                    <ul class="submenu" id="submenu-category">
-
-                    </ul>
-                </li>
-                <li class="menu-item"><a href="#/">محصولات</a></li>
-                <li class="menu-item">
-  <a href="#/cart">
-    سبد خرید 🛒
-    <span id="cart-count" style="
-      background:red;
-      color:white;
-      padding:2px 6px;
-      border-radius:50%;
-      font-size:12px;
-      margin-right:5px;
-    ">0</span>
-  </a>
-</li>
-            </ul>
-        </div>
-    </nav>
+   <nav class="sub-nav">
+    <div class="container">
+        <ul class="menu-list">
+            <li class="menu-item categories nav-item">
+                <strong>گروه محصولات</strong>
+                <ul class="submenu" id="submenu-category"></ul>
+            </li>
+            
+            <!-- لینک نمایش همه محصولات -->
+            <li class="menu-item">
+                <a href="#" id="allProductsLink">همه محصولات</a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="#/cart">سبد خرید</a>
+            </li>
+        </ul>
+    </div>
+</nav>
 
     <div class="container-fluid">
 <section class="testimonial-section2">
@@ -225,7 +218,9 @@
 
             <div id="app"></div>
 
-            <div id="pagination" class="pagination"></div>
+            <!-- در انتهای لیست محصولات -->
+<div id="pagination-container" class="mt-4 mb-5"></div>
+
         </section>
 
 
