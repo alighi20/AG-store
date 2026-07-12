@@ -137,12 +137,15 @@ export function renderProductDetail(product) {
                                 <small class="text-danger">تومان</small>
                             </div>
 
-                            <button class="btn btn-primary btn-lg rounded-pill px-4"
-                                    id="addToCartDetailBtn"
-                                    data-id="${product.id}">
-                                <i class="fa fa-shopping-cart me-2"></i>
-                                افزودن به سبد خرید
-                            </button>
+                        <button 
+class="btn btn-primary btn-lg rounded-pill px-4"
+onclick='addToCart({
+    id: ${product.id},
+    name: "${product.title}",
+    price: ${product.price}
+})'>
+افزودن به سبد خرید
+</button>
 
                         </div>
 

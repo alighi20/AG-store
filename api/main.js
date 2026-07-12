@@ -3,6 +3,7 @@ import {
   renderProducts,
   renderProductDetail,
   renderSlider,
+  
 } from "../js/ui.js";
 
 const API_BASE_URL = "https://api.apitester.ir/api";
@@ -130,14 +131,19 @@ const state = {
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
-  console.log("App initialized");
+    console.log("App initialized");
 
-  bindEvents();
+    bindEvents();
 
-  // ۱. مطمئن شدن از وجود توکن معتبر
-  if (!token) {
-    token = localStorage.getItem(STORAGE_KEYS.token);
-  }
+    if (typeof updateCartCount === "function") {
+        updateCartCount();
+    }
+
+    // 🔥 اینا رو اضافه کن
+    handleRoute();
+    window.addEventListener("hashchange", handleRoute);
+}
+
   if (!token) {
     try {
       await authenticate(); // لاگین خودکار با یوزر و پس هاردکد شده
@@ -148,7 +154,7 @@ async function init() {
 
   // ۲. بارگذاری داده‌ها (که خودشان اول کش را چک می‌کنند)
   await Promise.allSettled([loadCategories(), loadProducts(),loadCheapProducts(),loadExpensiveProducts()]);
-}
+
 
 
 
@@ -514,23 +520,32 @@ function renderCheapProductsSlider(products) {
     const wrapper = document.getElementById('cheap-products-wrapper');
     if (!wrapper) return;
 
-    // ۱. مرتب‌سازی از ارزان‌ترین به گران‌ترین
     const sortedProducts = [...products].sort((a, b) => a.price - b.price);
 
-    // ۲. تولید HTML اسلایدها (اضافه شدن رویداد کلیک و استایل نشانگر موس)
-    wrapper.innerHTML = sortedProducts.map(product => `
-        <div class="swiper-slide">
-            <div class="product-card-mini" 
-                 style="cursor: pointer;" 
-                 onclick="window.dispatchEvent(new CustomEvent('showProductDetails', { detail: { id: ${product.id} } }))">
-                <img src="${product.thumbnail}" alt="${product.title}">
-                <div class="product-name">${product.title}</div>
-                <div class="product-price">${product.price.toLocaleString()} تومان</div>
-            </div>
-        </div>
-    `).join('');
+wrapper.innerHTML = sortedProducts.map(product => `
+    <div class="swiper-slide">
+        <div class="product-card-mini"
+            style="cursor: pointer;"
+            onclick="window.dispatchEvent(new CustomEvent('showProductDetails', { detail: { id: ${product.id} } }))">
 
-    // ۳. راه‌اندازی Swiper با تاخیر کوچک جهت اطمینان از رندر کامل DOM
+            <img src="${product.thumbnail}" alt="${product.title}">
+            <div class="product-name">${product.title}</div>
+            <div class="product-price">${product.price.toLocaleString()} تومان</div>
+
+            <!-- 👇 اینجا اضافه کن -->
+            <button 
+                onclick='event.stopPropagation(); addToCart({
+                    id: ${product.id},
+                    name: "${product.title}",
+                    price: ${product.price}
+                })'>
+                🛒 افزودن به سبد
+            </button>
+
+        </div>
+    </div>
+`).join('');
+
     setTimeout(() => {
         if (window.cheapSliderInstance) {
             window.cheapSliderInstance.destroy(true, true);
@@ -539,7 +554,7 @@ function renderCheapProductsSlider(products) {
         window.cheapSliderInstance = new Swiper('.cheap-products-slider', {
             slidesPerView: 1,
             spaceBetween: 15,
-            loop: sortedProducts.length > 4, // فعال‌سازی لوپ فقط در صورت کافی بودن تعداد محصولات
+            loop: sortedProducts.length > 4,
             navigation: {
                 nextEl: '.cheap-slider-next',
                 prevEl: '.cheap-slider-prev',
@@ -748,4 +763,16 @@ function bindSearchEvent() {
       renderFilteredProducts();
     }, 300);
   });
+}
+function handleRoute() {
+    const hash = location.hash;
+
+    console.log("Route:", hash);
+
+    if (hash === "#/cart") {
+        renderCartPage();
+        return;
+    }
+
+    renderProducts();
 }
