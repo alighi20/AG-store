@@ -31,89 +31,103 @@ const AUTH_CREDENTIALS = {
 
 
 
-
 async function authenticate() {
-  console.log("[AUTH] Calling /Authenticate ...");
-
-  const response = await fetch(`${API_BASE_URL}/Authenticate`, {
-    method: "POST",
-    headers: {
-      "accept": "*/*",
-      "Content-Type": "application/json-patch+json",
-    },
-    body: JSON.stringify(AUTH_CREDENTIALS),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Authenticate failed: ${response.status}`);
-  }
-
-  const result = await response.json();
-
-  // ساختار خروجی دقیقا مثل اسکرین شات:
-  // { data: { token: "...", refreshToken: "...", ... }, isSuccess: true, ... }
-  const data = result?.data;
-
-  if (!data || !data.token || !data.refreshToken) {
-    throw new Error("Invalid auth response");
-  }
-
-  token = `Bearer ${data.token}`;
-  refreshToken = data.refreshToken;
-
-  localStorage.setItem(STORAGE_KEYS.token, token);
-  localStorage.setItem(STORAGE_KEYS.refreshToken, refreshToken);
-
-  console.log("[AUTH] Login success, token & refreshToken stored.");
-  return token;
-}
-
-async function refreshAccessToken() {
-  const currentRefreshToken =
-    refreshToken || localStorage.getItem(STORAGE_KEYS.refreshToken);
-
-  if (!currentRefreshToken) {
-    console.warn("[AUTH] No refresh token, falling back to authenticate()");
-    return authenticate();
-  }
-
-  console.log("[AUTH] Refreshing token ...");
-
-  const response = await fetch(
-    `${API_BASE_URL}/Authenticate/NewToken/${currentRefreshToken}`,
-    {
+  try {
+    const response = await fetch(`${API_BASE_URL}/Authenticate`, {
       method: "POST",
       headers: {
-        accept: "*/*",
-        Authorization: token || localStorage.getItem(STORAGE_KEYS.token) || "",
+        "Content-Type": "application/json-patch+json",
       },
+      body: JSON.stringify(AUTH_CREDENTIALS),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Authentication failed: ${response.status}`);
     }
-  );
 
-  if (!response.ok) {
-    console.warn(
-      `[AUTH] Refresh failed with status ${response.status}, falling back to authenticate().`
-    );
-    return authenticate();
+    const result = await response.json();
+    const data = result?.data || result;
+
+    if (!data?.token || !data?.refreshToken) {
+      throw new Error("Invalid authentication response: token or refreshToken missing");
+    }
+
+    token = `Bearer ${data.token}`;
+    refreshToken = data.refreshToken;
+
+    localStorage.setItem(STORAGE_KEYS.token, token);
+    localStorage.setItem(STORAGE_KEYS.refreshToken, refreshToken);
+
+    console.log("[AUTH] Authentication successful.");
+    return token;
+  } catch (error) {
+    console.error("[AUTH] authenticate() failed:", error);
+    throw error;
   }
-
-  const result = await response.json();
-  const data = result?.data;
-
-  if (!data || !data.token || !data.refreshToken) {
-    console.warn("[AUTH] Refresh response invalid, falling back to authenticate().");
-    return authenticate();
-  }
-
-  token = `Bearer ${data.token}`;
-  refreshToken = data.refreshToken;
-
-  localStorage.setItem(STORAGE_KEYS.token, token);
-  localStorage.setItem(STORAGE_KEYS.refreshToken, refreshToken);
-
-  console.log("[AUTH] Token refreshed.");
-  return token;
 }
+
+
+
+async function refreshAccessToken() {
+  try {
+    const currentRefreshToken =
+      refreshToken || localStorage.getItem(STORAGE_KEYS.refreshToken);
+
+    if (!currentRefreshToken) {
+      console.warn("[AUTH] No refresh token found. Re-authenticating...");
+      return await authenticate();
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/Authenticate/NewToken/${currentRefreshToken}`,
+      {
+        method: "POST",
+      headers: {
+  "Content-Type": "application/json",
+  Authorization: token || localStorage.getItem(STORAGE_KEYS.token) || "",
+},
+
+
+      }
+    );
+
+    if (!response.ok) {
+      console.warn(`[AUTH] Refresh failed with status ${response.status}. Re-authenticating...`);
+      clearAuthState();
+      return await authenticate();
+    }
+
+    const result = await response.json();
+    const data = result?.data || result;
+
+    if (!data?.token || !data?.refreshToken) {
+      console.warn("[AUTH] Invalid refresh response. Re-authenticating...");
+      clearAuthState();
+      return await authenticate();
+    }
+
+    token = `Bearer ${data.token}`;
+    refreshToken = data.refreshToken;
+
+    localStorage.setItem(STORAGE_KEYS.token, token);
+    localStorage.setItem(STORAGE_KEYS.refreshToken, refreshToken);
+
+    console.log("[AUTH] Token refreshed successfully.");
+    return token;
+  } catch (error) {
+    console.error("[AUTH] refreshAccessToken() failed:", error);
+    clearAuthState();
+    return await authenticate();
+  }
+}
+function clearAuthState() {
+  token = null;
+  refreshToken = null;
+  localStorage.removeItem(STORAGE_KEYS.token);
+  localStorage.removeItem(STORAGE_KEYS.refreshToken);
+}
+
+
 
 
 
@@ -161,42 +175,47 @@ async function init() {
 function getAuthHeaders(contentType = "application/json") {
   return {
     "Content-Type": contentType,
-    Authorization: token,
+    Authorization: token || localStorage.getItem(STORAGE_KEYS.token) || "",
   };
 }
 
-async function request(url, options = {}, retry = true) {
-  // اگر هنوز توکن نداریم (بار اول)، login کن
-  if (!token) {
-    token = localStorage.getItem(STORAGE_KEYS.token);
-  }
-  if (!token) {
-    await authenticate();
-  }
 
-  const response = await fetch(url, {
-    ...options,
-    headers: {
+
+async function request(url, options = {}, retry = true) {
+  try {
+    if (!token) {
+      token = localStorage.getItem(STORAGE_KEYS.token);
+    }
+
+    if (!token) {
+      await authenticate();
+    }
+
+    const requestHeaders = {
       ...getAuthHeaders(options.headers?.["Content-Type"] || "application/json"),
       ...(options.headers || {}),
-    },
-  });
+    };
 
-  // اگر توکن منقضی شده بود
-  if (response.status === 401 && retry) {
-    console.warn("[AUTH] 401 received, trying refreshAccessToken...");
+    const response = await fetch(url, {
+      ...options,
+      headers: requestHeaders,
+    });
 
-    await refreshAccessToken();
+    if (response.status === 401 && retry) {
+      console.warn("[AUTH] 401 received. Attempting token refresh...");
+      await refreshAccessToken();
+      return request(url, options, false);
+    }
 
-    // بعد از رفرش، دوباره همون request را با retry=false بفرست
-    return request(url, options, false);
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`);
+    }
+
+    return response;
+  } catch (error) {
+    console.error("[REQUEST] Failed:", error);
+    throw error;
   }
-
-  if (!response.ok) {
-    throw new Error(`HTTP error ${response.status}`);
-  }
-
-  return response.json();
 }
 
 
@@ -205,12 +224,40 @@ function getApiData(result) {
 
   if (Array.isArray(result)) return result;
 
+  if (Array.isArray(result.data)) {
+    return result.data;
+  }
+
   if (result.isSuccess && Array.isArray(result.data)) {
     return result.data;
   }
 
-  if (Array.isArray(result.data)) {
-    return result.data;
+  if (Array.isArray(result?.data?.products)) {
+    return result.data.products;
+  }
+
+  if (Array.isArray(result?.data?.items)) {
+    return result.data.items;
+  }
+
+  if (Array.isArray(result?.data?.result)) {
+    return result.data.result;
+  }
+
+  if (Array.isArray(result?.result?.data)) {
+    return result.result.data;
+  }
+
+  if (Array.isArray(result?.result?.products)) {
+    return result.result.products;
+  }
+
+  if (Array.isArray(result?.products)) {
+    return result.products;
+  }
+
+  if (Array.isArray(result?.items)) {
+    return result.items;
   }
 
   return [];
@@ -285,48 +332,48 @@ async function loadCategories() {
     console.error("خطا در بارگذاری دسته‌بندی‌ها:", error);
   }
 }
-
 async function loadProducts(page = 1) {
   state.currentPage = page;
-  
-  // ۱. اضافه کردن آیدی دسته‌بندی به کلید کش
-  // اگر selectedCategoryId مقدار 'all' بود، کش کلی در نظر گرفته می‌شود
-  const cacheKey = `${STORAGE_KEYS.products}_cat_${state.selectedCategoryId}_page_${page}`;
-  
-  const cachedProducts = readStorage(cacheKey);
-if (cachedProducts && cachedProducts.length > 0) {
-    console.log(`[PRODUCTS] Page ${page} (Cat: ${state.selectedCategoryId}) Loaded from Cache`);
-    state.products = cachedProducts.products || cachedProducts;
-    
-    // اگر total هم در کش ذخیره شده باشد
-    if (cachedProducts.total !== undefined) {
-        state.totalPages = Math.ceil(cachedProducts.total / state.pageSize) || 1;
-    }
-    
-    renderFilteredProducts();
-    renderPagination(); 
-    return;
-}
 
+  const cacheKey = `${STORAGE_KEYS.products}_cat_${state.selectedCategoryId}_page_${page}`;
+
+  const cachedProducts = readStorage(cacheKey);
+  const cachedProductList = Array.isArray(cachedProducts)
+    ? cachedProducts
+    : cachedProducts?.products;
+
+  if (Array.isArray(cachedProductList) && cachedProductList.length > 0) {
+    console.log(`[PRODUCTS] Page ${page} (Cat: ${state.selectedCategoryId}) Loaded from Cache`);
+
+    state.products = cachedProductList;
+
+    const cachedTotal = Array.isArray(cachedProducts)
+      ? cachedProductList.length
+      : Number(cachedProducts?.total || cachedProductList.length || 0);
+
+    state.totalPages = Math.max(1, Math.ceil(cachedTotal / state.pageSize));
+
+    renderFilteredProducts();
+    renderPagination();
+    return;
+  }
 
   setProductsLoading();
   console.log(`[PRODUCTS] Fetching Page ${page} (Cat: ${state.selectedCategoryId}) from API...`);
 
   try {
-    // آماده‌سازی Body برای ارسال به سرور
     const requestBody = {
       size: state.pageSize,
       page: state.currentPage,
       shopCode: SHOP_CODE,
     };
 
-    // ۲. اگر دسته‌بندی خاصی انتخاب شده (به جز همه)، آن را به سرور می‌فرستیم
-    // نکته مهم: حتماً Swagger پروژه را چک کنید تا مطمئن شوید اسم این فیلد categoryId است (شاید groupId یا چیز دیگری باشد)
-    if (state.selectedCategoryId !== "all") {
-      requestBody.categoryId = Number(state.selectedCategoryId); 
+    if (state.selectedCategoryId !== "all" && state.selectedCategoryId !== null && state.selectedCategoryId !== undefined) {
+      requestBody.categoryId = Number(state.selectedCategoryId);
     }
 
-    const result = await request(
+    // فرستادن درخواست به API
+    let rawResult = await request(
       `${API_BASE_URL}/Product/GetProductWithPagination`,
       {
         method: "POST",
@@ -334,26 +381,52 @@ if (cachedProducts && cachedProducts.length > 0) {
       }
     );
 
+    console.log("[PRODUCTS API] requestBody:", requestBody);
+    console.log("[PRODUCTS API] rawResult received:", rawResult);
+
+    // بخش حیاتی: اگر خروجی یک شیء Response خام بود، آن را به JSON تبدیل کن
+    let result = rawResult;
+    if (rawResult && typeof rawResult.json === 'function') {
+      console.log("[PRODUCTS API] Raw Response object detected, parsing to JSON...");
+      result = await rawResult.json();
+      console.log("[PRODUCTS API] Parsed JSON result:", result);
+    }
+
     const products = getApiData(result);
-    
-   const totalItems = result.total || 0;
-state.totalPages = Math.ceil(totalItems / state.pageSize) || 1;
 
-// جلوگیری از رفتن به صفحه‌ای که وجود نداره
-if (state.currentPage > state.totalPages) {
-  state.currentPage = state.totalPages;
-}
+    const totalItems = Number(
+      result?.total ??
+      result?.data?.total ??
+      result?.data?.count ??
+      result?.data?.totalCount ??
+      result?.result?.total ??
+      result?.result?.count ??
+      result?.products?.length ??
+      result?.data?.products?.length ??
+      products.length ??
+      0
+    );
 
+    state.totalPages = Math.max(1, Math.ceil(totalItems / state.pageSize));
 
-    state.products = products;
-    writeStorage(cacheKey, { 
-    products: products, 
-    total: result.total || 0 
-});
- 
-    
+    if (state.currentPage > state.totalPages) {
+      state.currentPage = state.totalPages;
+    }
+
+    state.products = Array.isArray(products) ? products : [];
+
+    writeStorage(cacheKey, {
+      products: state.products,
+      total: totalItems,
+    });
+
     renderFilteredProducts();
     renderPagination();
+
+    if (state.products.length === 0) {
+      console.warn("[PRODUCTS] API returned empty product list.", result);
+      setProductsError("محصولی در این دسته یافت نشد");
+    }
   } catch (error) {
     console.error("خطا در بارگذاری محصولات:", error);
     if (state.products.length === 0) {
@@ -361,6 +434,9 @@ if (state.currentPage > state.totalPages) {
     }
   }
 }
+
+
+
 
 
 async function getProductById(id) {
