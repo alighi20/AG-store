@@ -199,53 +199,69 @@ function initProductClicks() {
 /**
  * رندر اسلایدر
  */
-// === ui.js - جایگزین تابع renderSlider کن ===
+
 export function renderSlider(slides) {
-    console.log("renderSlider called with categories:", slides);
+  console.log("renderSlider called", slides);
 
   const container = document.querySelector(".testim .cont");
   const dotsContainer = document.querySelector(".testim .dots");
 
-    if (!container || !dotsContainer) {
-        console.error("Slider container not found");
-        return;
-    }
+  if (!container) {
+    console.error("Slider container not found (.testim .cont)");
+    return;
+  }
+
+  if (!dotsContainer) {
+    console.error("Slider dots not found (.testim .dots)");
+    return;
+  }
+
+  if (!slides || slides.length === 0) {
+    console.warn("No slides received");
+    return;
+  }
 
   container.innerHTML = "";
   dotsContainer.innerHTML = "";
 
-    slides.forEach((slide, index) => {
-        const image = slide.thumbnail || "";
-        const title = slide.title || "بدون عنوان";
-        const categoryId = slide.id;
+  slides.forEach((slide, index) => {
+    const image = slide.thumbnail || "";
+    const title = slide.title || slide.name || slide.fileUrl || "بدون عنوان";
+    const description = slide.description || slide.text || "";
+    const link = slide.link || "#";
 
-        const slideDiv = document.createElement("div");
-        if (index === 0) slideDiv.classList.add("active");
+    const slideDiv = document.createElement("div");
 
-        slideDiv.innerHTML = `
-            <div class="img">
-                <img src="${image}" alt="${title}">
-            </div>
-            <div class="content-wrapper">
-                <h4 class="h4 mt-4">${title}</h4>
-                <button class="btn-buy slider-category-btn" 
-                        data-category-id="${categoryId}">
-                    مشاهده محصولات این گروه
-                </button>
-            </div>
-        `;
+    if (index === 0) {
+      slideDiv.classList.add("active");
+    }
+
+    // مهم: اتصال اسلاید به فیلتر دسته‌بندی
+    if (slide.id != null) {
+      slideDiv.dataset.categoryId = String(slide.id);
+    }
+
+    slideDiv.innerHTML = `
+      <div class="img">
+        <img src="${image}" alt="${title}">
+      </div>
+
+      <div class="content-wrapper">
+        <h4 class="h4 mt-4">${title}</h4>
+        <a href="${link}" class="btn-buy">مشاهده و خرید</a>
+      </div>
+    `;
 
     container.appendChild(slideDiv);
 
-        // dot
-        const dot = document.createElement("span");
-        dot.className = index === 0 ? "dot active" : "dot";
-        dotsContainer.appendChild(dot);
-    });
+    const dot = document.createElement("span");
+    dot.className = index === 0 ? "dot active" : "dot";
+    dotsContainer.appendChild(dot);
+  });
 
-    initSliderNavigation();
-    initSliderCategoryClicks(); // کلیک برای فیلتر
+  initSliderNavigation();
 }
+
 
 /** اضافه کردن کلیک روی اسلایدرها */
 function initSliderCategoryClicks() {

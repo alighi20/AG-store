@@ -296,21 +296,22 @@ async function loadProducts(page = 1) {
 
   const cachedProducts = readStorage(cacheKey);
 
-  const hasCachedProducts = Array.isArray(cachedProducts)
-    ? cachedProducts.length > 0
-    : Array.isArray(cachedProducts?.products) && cachedProducts.products.length > 0;
+const hasCachedProducts = Array.isArray(cachedProducts)
+  ? cachedProducts.length > 0
+  : Array.isArray(cachedProducts?.products) && cachedProducts.products.length > 0;
 
-  if (hasCachedProducts) {
-    state.products = cachedProducts.products || cachedProducts;
+if (hasCachedProducts) {
+  state.products = cachedProducts.products || cachedProducts;
 
-    if (cachedProducts.total !== undefined) {
-      state.totalPages = Math.ceil(cachedProducts.total / state.pageSize) || 1;
-    }
-
-    renderFilteredProducts();
-    renderPagination();
-    return;
+  if (cachedProducts.total !== undefined) {
+    state.totalPages = Math.ceil(cachedProducts.total / state.pageSize) || 1;
   }
+
+  renderFilteredProducts();
+  renderPagination();
+  return;
+}
+
 
 
 
@@ -374,7 +375,7 @@ function resetToDefaultProductsView() {
   loadProducts(1);
 }
 
-document.getElementById("productsBtn")?.addEventListener("click", (e) => {
+document.getElementById("allProductsLink")?.addEventListener("click", (e) => {
   e.preventDefault();
   resetToDefaultProductsView();
 });
@@ -752,6 +753,7 @@ function bindCategoryEvent() {
     loadProducts(1);
   });
 }
+
 
 
 
