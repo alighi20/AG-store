@@ -132,18 +132,25 @@ const state = {
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
-    console.log("App initialized");
+  bindEvents();
+  
+  // ۱. اول دسته‌بندی‌ها را لود کن تا مطمئن شوی ID دسته‌بندی‌ها درست است
+  await loadCategories();
+  
+  // ۲. مقدار پیش‌فرض را مشخص کن
+  state.selectedCategoryId = "all"; 
+  state.currentPage = 1;
 
-    bindEvents();
-
-    if (typeof updateCartCount === "function") {
-        updateCartCount();
-    }
-
-    // 🔥 اینا رو اضافه کن
-    handleRoute();
-    window.addEventListener("hashchange", handleRoute);
+  // ۳. حالا محصولات را لود کن
+  await Promise.allSettled([
+    loadProducts(1),
+    loadCheapProducts(),
+    loadExpensiveProducts()
+  ]);
+  
+  console.log("App fully initialized and products loaded.");
 }
+
 
   if (!token) {
     try {
