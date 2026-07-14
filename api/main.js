@@ -3,6 +3,7 @@ import {
   renderProducts,
   renderProductDetail,
   renderSlider,
+  
 } from "../js/ui.js";
 
 const API_BASE_URL = "https://api.apitester.ir/api";
@@ -131,14 +132,19 @@ const state = {
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
-  console.log("App initialized");
+    console.log("App initialized");
 
-  bindEvents();
+    bindEvents();
 
-  // ۱. مطمئن شدن از وجود توکن معتبر
-  if (!token) {
-    token = localStorage.getItem(STORAGE_KEYS.token);
-  }
+    if (typeof updateCartCount === "function") {
+        updateCartCount();
+    }
+
+    // 🔥 اینا رو اضافه کن
+    handleRoute();
+    window.addEventListener("hashchange", handleRoute);
+}
+
   if (!token) {
     try {
       await authenticate(); // لاگین خودکار با یوزر و پس هاردکد شده
@@ -148,8 +154,8 @@ async function init() {
   }
   state.selectedCategoryId = "all";
   // ۲. بارگذاری داده‌ها (که خودشان اول کش را چک می‌کنند)
-  await Promise.allSettled([loadCategories(), loadProducts(), loadCheapProducts(), loadExpensiveProducts()]);
-}
+  await Promise.allSettled([loadCategories(), loadProducts(),loadCheapProducts(),loadExpensiveProducts()]);
+
 
 
 
@@ -532,11 +538,11 @@ function renderCheapProductsSlider(products) {
   const wrapper = document.getElementById('cheap-products-wrapper');
   if (!wrapper) return;
 
-  // ۱. مرتب‌سازی از ارزان‌ترین به گران‌ترین
-  const sortedProducts = [...products].sort((a, b) => a.price - b.price);
+    // ۱. مرتب‌سازی از ارزان‌ترین به گران‌ترین
+    const sortedProducts = [...products].sort((a, b) => a.price - b.price);
 
-  // ۲. تولید HTML اسلایدها (اضافه شدن رویداد کلیک و استایل نشانگر موس)
-  wrapper.innerHTML = sortedProducts.map(product => `
+    // ۲. تولید HTML اسلایدها (اضافه شدن رویداد کلیک و استایل نشانگر موس)
+    wrapper.innerHTML = sortedProducts.map(product => `
         <div class="swiper-slide">
             <div class="product-card-mini" 
                  style="cursor: pointer;" 
@@ -548,30 +554,30 @@ function renderCheapProductsSlider(products) {
         </div>
     `).join('');
 
-  // ۳. راه‌اندازی Swiper با تاخیر کوچک جهت اطمینان از رندر کامل DOM
-  setTimeout(() => {
-    if (window.cheapSliderInstance) {
-      window.cheapSliderInstance.destroy(true, true);
-    }
+    // ۳. راه‌اندازی Swiper با تاخیر کوچک جهت اطمینان از رندر کامل DOM
+    setTimeout(() => {
+        if (window.cheapSliderInstance) {
+            window.cheapSliderInstance.destroy(true, true);
+        }
 
-    window.cheapSliderInstance = new Swiper('.cheap-products-slider', {
-      slidesPerView: 1,
-      spaceBetween: 15,
-      loop: sortedProducts.length > 4, // فعال‌سازی لوپ فقط در صورت کافی بودن تعداد محصولات
-      navigation: {
-        nextEl: '.cheap-slider-next',
-        prevEl: '.cheap-slider-prev',
-      },
-      observer: true,
-      observeParents: true,
-      breakpoints: {
-        480: { slidesPerView: 2 },
-        768: { slidesPerView: 3 },
-        1024: { slidesPerView: 4 }
-      },
-      rtl: true
-    });
-  }, 50);
+        window.cheapSliderInstance = new Swiper('.cheap-products-slider', {
+            slidesPerView: 1,
+            spaceBetween: 15,
+            loop: sortedProducts.length > 4, // فعال‌سازی لوپ فقط در صورت کافی بودن تعداد محصولات
+            navigation: {
+                nextEl: '.cheap-slider-next',
+                prevEl: '.cheap-slider-prev',
+            },
+            observer: true,
+            observeParents: true,
+            breakpoints: {
+                480: { slidesPerView: 2 },
+                768: { slidesPerView: 3 },
+                1024: { slidesPerView: 4 }
+            },
+            rtl: true
+        });
+    }, 50);
 }
 
 
@@ -666,12 +672,42 @@ function setProductDetailLoading() {
     `;
 }
 
+function bindAllProductsLink() {
+  const allProductsLink = document.getElementById('allProductsLink');
+  if (allProductsLink) {
+    allProductsLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      state.selectedCategoryId = "all";
+      state.currentPage = 1;
+      loadProducts(1);
+    });
+  }
+}
+
+function bindSliderCategoryEvent() {
+  window.addEventListener('categorySelected', (event) => {
+    const { categoryId } = event.detail;
+    state.selectedCategoryId = categoryId;
+    state.currentPage = 1;
+    state.searchTerm = "";
+    
+    loadProducts(1);
+    
+    // اسکرول به بخش محصولات
+    setTimeout(() => {
+      document.getElementById("app")?.scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+  });
+}
+
 function bindEvents() {
   bindProductDetailsEvent();
   bindBackToProductsEvent();
   bindCategoryEvent();
   bindSearchEvent();
   bindPaginationEvent();
+  bindAllProductsLink();
+  bindSliderCategoryEvent();
 }
 
 function bindProductDetailsEvent() {
@@ -735,4 +771,16 @@ function bindSearchEvent() {
       renderFilteredProducts();
     }, 300);
   });
+}
+function handleRoute() {
+    const hash = location.hash;
+
+    console.log("Route:", hash);
+
+    if (hash === "#/cart") {
+        renderCartPage();
+        return;
+    }
+
+    renderProducts();
 }
