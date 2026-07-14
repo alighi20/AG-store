@@ -17,7 +17,8 @@ const STORAGE_KEYS = {
   categories: "app_categories",
   token: "auth_token",
   refreshToken: "refresh_token",
-  cheapProducts: "cheap_products"
+  cheapProducts: "cheap_products",
+  expensiveProducts: "expensive_products"
 };
 
 let token = localStorage.getItem(STORAGE_KEYS.token) || null;
@@ -123,7 +124,7 @@ const state = {
   selectedCategoryId: null,
   searchTerm: "",
   currentPage: 1,
-  pageSize: 10,
+  pageSize: 12,
   totalPages: 1
 };
 
@@ -145,9 +146,9 @@ async function init() {
       console.error("[AUTH] Initial authentication failed:", error);
     }
   }
-
+  state.selectedCategoryId = "all";
   // ۲. بارگذاری داده‌ها (که خودشان اول کش را چک می‌کنند)
-  await Promise.allSettled([loadCategories(), loadProducts(),loadCheapProducts(),loadExpensiveProducts()]);
+  await Promise.allSettled([loadCategories(), loadProducts(), loadCheapProducts(), loadExpensiveProducts()]);
 }
 
 
@@ -254,7 +255,7 @@ async function loadCategories() {
     console.log("[CATEGORIES] Loaded from Cache (Local Storage)");
     state.categories = cachedCategories;
     renderCategories(cachedCategories);
-    renderSlider(cachedCategories); 
+    renderSlider(cachedCategories);
     return; // خروج از تابع؛ نیازی به درخواست API نیست
   }
 
@@ -272,7 +273,7 @@ async function loadCategories() {
 
     state.categories = categories;
     writeStorage(STORAGE_KEYS.categories, categories); // ذخیره در کش برای دفعات بعدی
-    
+
     renderCategories(categories);
     renderSlider(categories); // رندر اسلایدر در اولین دریافت از API
   } catch (error) {
@@ -282,25 +283,29 @@ async function loadCategories() {
 
 async function loadProducts(page = 1) {
   state.currentPage = page;
-  
+
   // ۱. اضافه کردن آیدی دسته‌بندی به کلید کش
   // اگر selectedCategoryId مقدار 'all' بود، کش کلی در نظر گرفته می‌شود
   const cacheKey = `${STORAGE_KEYS.products}_cat_${state.selectedCategoryId}_page_${page}`;
-  
+
   const cachedProducts = readStorage(cacheKey);
-if (cachedProducts && cachedProducts.length > 0) {
-    console.log(`[PRODUCTS] Page ${page} (Cat: ${state.selectedCategoryId}) Loaded from Cache`);
+
+  const hasCachedProducts = Array.isArray(cachedProducts)
+    ? cachedProducts.length > 0
+    : Array.isArray(cachedProducts?.products) && cachedProducts.products.length > 0;
+
+  if (hasCachedProducts) {
     state.products = cachedProducts.products || cachedProducts;
-    
-    // اگر total هم در کش ذخیره شده باشد
+
     if (cachedProducts.total !== undefined) {
-        state.totalPages = Math.ceil(cachedProducts.total / state.pageSize) || 1;
+      state.totalPages = Math.ceil(cachedProducts.total / state.pageSize) || 1;
     }
-    
+
     renderFilteredProducts();
-    renderPagination(); 
+    renderPagination();
     return;
-}
+  }
+
 
 
   setProductsLoading();
@@ -317,7 +322,7 @@ if (cachedProducts && cachedProducts.length > 0) {
     // ۲. اگر دسته‌بندی خاصی انتخاب شده (به جز همه)، آن را به سرور می‌فرستیم
     // نکته مهم: حتماً Swagger پروژه را چک کنید تا مطمئن شوید اسم این فیلد categoryId است (شاید groupId یا چیز دیگری باشد)
     if (state.selectedCategoryId !== "all") {
-      requestBody.categoryId = Number(state.selectedCategoryId); 
+      requestBody.categoryId = Number(state.selectedCategoryId);
     }
 
     const result = await request(
@@ -329,23 +334,23 @@ if (cachedProducts && cachedProducts.length > 0) {
     );
 
     const products = getApiData(result);
-    
-   const totalItems = result.total || 0;
-state.totalPages = Math.ceil(totalItems / state.pageSize) || 1;
 
-// جلوگیری از رفتن به صفحه‌ای که وجود نداره
-if (state.currentPage > state.totalPages) {
-  state.currentPage = state.totalPages;
-}
+    const totalItems = result.total || 0;
+    state.totalPages = Math.ceil(totalItems / state.pageSize) || 1;
+
+    // جلوگیری از رفتن به صفحه‌ای که وجود نداره
+    if (state.currentPage > state.totalPages) {
+      state.currentPage = state.totalPages;
+    }
 
 
     state.products = products;
-    writeStorage(cacheKey, { 
-    products: products, 
-    total: result.total || 0 
-});
- 
-    
+    writeStorage(cacheKey, {
+      products: products,
+      total: result.total || 0
+    });
+
+
     renderFilteredProducts();
     renderPagination();
   } catch (error) {
@@ -355,6 +360,19 @@ if (state.currentPage > state.totalPages) {
     }
   }
 }
+
+function resetToDefaultProductsView() {
+  state.selectedCategoryId = "all";
+  state.searchTerm = "";
+  state.currentPage = 1;
+  loadProducts(1);
+}
+
+document.getElementById("productsBtn")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  resetToDefaultProductsView();
+});
+
 
 
 async function getProductById(id) {
@@ -433,11 +451,11 @@ function bindPaginationEvent() {
     event.preventDefault();
 
     const newPage = parseInt(pageLink.getAttribute("data-page"));
-    
+
     // جلوگیری از کلیک روی صفحات نامعتبر
     if (newPage > 0 && !event.target.parentElement.classList.contains("disabled")) {
       loadProducts(newPage);
-      
+
       // اسکرول نرم به بالای لیست محصولات
       document.getElementById("app")?.scrollIntoView({ behavior: 'smooth' });
     }
@@ -470,7 +488,7 @@ async function loadCheapProducts() {
 
     // ذخیره در کش
     writeStorage(STORAGE_KEYS.cheapProducts, products);
-    
+
     // رندر اسلایدر
     renderCheapProductsSlider(products);
   } catch (error) {
@@ -501,7 +519,7 @@ async function loadExpensiveProducts() {
 
     // ذخیره در کش
     writeStorage(STORAGE_KEYS.expensiveProducts, products);
-    
+
     // رندر اسلایدر
     renderExpensiveProductsSlider(products);
   } catch (error) {
@@ -511,14 +529,14 @@ async function loadExpensiveProducts() {
 
 
 function renderCheapProductsSlider(products) {
-    const wrapper = document.getElementById('cheap-products-wrapper');
-    if (!wrapper) return;
+  const wrapper = document.getElementById('cheap-products-wrapper');
+  if (!wrapper) return;
 
-    // ۱. مرتب‌سازی از ارزان‌ترین به گران‌ترین
-    const sortedProducts = [...products].sort((a, b) => a.price - b.price);
+  // ۱. مرتب‌سازی از ارزان‌ترین به گران‌ترین
+  const sortedProducts = [...products].sort((a, b) => a.price - b.price);
 
-    // ۲. تولید HTML اسلایدها (اضافه شدن رویداد کلیک و استایل نشانگر موس)
-    wrapper.innerHTML = sortedProducts.map(product => `
+  // ۲. تولید HTML اسلایدها (اضافه شدن رویداد کلیک و استایل نشانگر موس)
+  wrapper.innerHTML = sortedProducts.map(product => `
         <div class="swiper-slide">
             <div class="product-card-mini" 
                  style="cursor: pointer;" 
@@ -530,40 +548,40 @@ function renderCheapProductsSlider(products) {
         </div>
     `).join('');
 
-    // ۳. راه‌اندازی Swiper با تاخیر کوچک جهت اطمینان از رندر کامل DOM
-    setTimeout(() => {
-        if (window.cheapSliderInstance) {
-            window.cheapSliderInstance.destroy(true, true);
-        }
+  // ۳. راه‌اندازی Swiper با تاخیر کوچک جهت اطمینان از رندر کامل DOM
+  setTimeout(() => {
+    if (window.cheapSliderInstance) {
+      window.cheapSliderInstance.destroy(true, true);
+    }
 
-        window.cheapSliderInstance = new Swiper('.cheap-products-slider', {
-            slidesPerView: 1,
-            spaceBetween: 15,
-            loop: sortedProducts.length > 4, // فعال‌سازی لوپ فقط در صورت کافی بودن تعداد محصولات
-            navigation: {
-                nextEl: '.cheap-slider-next',
-                prevEl: '.cheap-slider-prev',
-            },
-            observer: true,
-            observeParents: true,
-            breakpoints: {
-                480: { slidesPerView: 2 },
-                768: { slidesPerView: 3 },
-                1024: { slidesPerView: 4 }
-            },
-            rtl: true
-        });
-    }, 50);
+    window.cheapSliderInstance = new Swiper('.cheap-products-slider', {
+      slidesPerView: 1,
+      spaceBetween: 15,
+      loop: sortedProducts.length > 4, // فعال‌سازی لوپ فقط در صورت کافی بودن تعداد محصولات
+      navigation: {
+        nextEl: '.cheap-slider-next',
+        prevEl: '.cheap-slider-prev',
+      },
+      observer: true,
+      observeParents: true,
+      breakpoints: {
+        480: { slidesPerView: 2 },
+        768: { slidesPerView: 3 },
+        1024: { slidesPerView: 4 }
+      },
+      rtl: true
+    });
+  }, 50);
 }
 
 
 function renderExpensiveProductsSlider(products) {
-    const wrapper = document.getElementById('expensive-products-wrapper');
-    if (!wrapper) return;
+  const wrapper = document.getElementById('expensive-products-wrapper');
+  if (!wrapper) return;
 
-    const sortedProducts = [...products].sort((a, b) => b.price - a.price);
+  const sortedProducts = [...products].sort((a, b) => b.price - a.price);
 
-    wrapper.innerHTML = sortedProducts.map(product => `
+  wrapper.innerHTML = sortedProducts.map(product => `
         <div class="swiper-slide">
             <div class="product-card-mini"
                  style="cursor:pointer"
@@ -583,24 +601,24 @@ function renderExpensiveProductsSlider(products) {
         </div>
     `).join('');
 
-    if (window.expensiveSliderInstance) {
-        window.expensiveSliderInstance.destroy(true, true);
-    }
+  if (window.expensiveSliderInstance) {
+    window.expensiveSliderInstance.destroy(true, true);
+  }
 
-    window.expensiveSliderInstance = new Swiper('.expensive-products-slider', {
-        slidesPerView: 1,
-        spaceBetween: 15,
-        navigation: {
-            nextEl: '.expensive-slider-next',
-            prevEl: '.expensive-slider-prev',
-        },
-        breakpoints: {
-            480: { slidesPerView: 2 },
-            768: { slidesPerView: 3 },
-            1024: { slidesPerView: 4 }
-        },
-        rtl: true
-    });
+  window.expensiveSliderInstance = new Swiper('.expensive-products-slider', {
+    slidesPerView: 1,
+    spaceBetween: 15,
+    navigation: {
+      nextEl: '.expensive-slider-next',
+      prevEl: '.expensive-slider-prev',
+    },
+    breakpoints: {
+      480: { slidesPerView: 2 },
+      768: { slidesPerView: 3 },
+      1024: { slidesPerView: 4 }
+    },
+    rtl: true
+  });
 }
 
 
@@ -688,18 +706,17 @@ function bindBackToProductsEvent() {
 function bindCategoryEvent() {
   document.addEventListener("click", (event) => {
     const categoryLink = event.target.closest("[data-category-id]");
-
     if (!categoryLink) return;
 
     event.preventDefault();
 
     state.selectedCategoryId = categoryLink.dataset.categoryId;
-    
-    // تغییر مهم: ریست کردن صفحه به 1 و فراخوانی محصولات از سرور
+    state.searchTerm = "";
     state.currentPage = 1;
     loadProducts(1);
   });
 }
+
 
 
 
