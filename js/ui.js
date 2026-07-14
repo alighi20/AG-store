@@ -203,16 +203,16 @@ function initProductClicks() {
 export function renderSlider(slides) {
     console.log("renderSlider called with categories:", slides);
 
-    const container = document.querySelector(".testim .cont");
-    const dotsContainer = document.querySelector(".testim .dots");
+  const container = document.querySelector(".testim .cont");
+  const dotsContainer = document.querySelector(".testim .dots");
 
     if (!container || !dotsContainer) {
         console.error("Slider container not found");
         return;
     }
 
-    container.innerHTML = "";
-    dotsContainer.innerHTML = "";
+  container.innerHTML = "";
+  dotsContainer.innerHTML = "";
 
     slides.forEach((slide, index) => {
         const image = slide.thumbnail || "";
@@ -235,7 +235,7 @@ export function renderSlider(slides) {
             </div>
         `;
 
-        container.appendChild(slideDiv);
+    container.appendChild(slideDiv);
 
         // dot
         const dot = document.createElement("span");
@@ -261,6 +261,7 @@ function initSliderCategoryClicks() {
         });
     });
 }
+
 
 
 
