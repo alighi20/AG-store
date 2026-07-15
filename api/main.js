@@ -132,18 +132,25 @@ const state = {
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
-    console.log("App initialized");
+  bindEvents();
+  
+  // ۱. اول دسته‌بندی‌ها را لود کن تا مطمئن شوی ID دسته‌بندی‌ها درست است
+  await loadCategories();
+  
+  // ۲. مقدار پیش‌فرض را مشخص کن
+  state.selectedCategoryId = "all"; 
+  state.currentPage = 1;
 
-    bindEvents();
-
-    if (typeof updateCartCount === "function") {
-        updateCartCount();
-    }
-
-    // 🔥 اینا رو اضافه کن
-    handleRoute();
-    window.addEventListener("hashchange", handleRoute);
+  // ۳. حالا محصولات را لود کن
+  await Promise.allSettled([
+    loadProducts(1),
+    loadCheapProducts(),
+    loadExpensiveProducts()
+  ]);
+  
+  console.log("App fully initialized and products loaded.");
 }
+
 
   if (!token) {
     try {
@@ -296,21 +303,22 @@ async function loadProducts(page = 1) {
 
   const cachedProducts = readStorage(cacheKey);
 
-  const hasCachedProducts = Array.isArray(cachedProducts)
-    ? cachedProducts.length > 0
-    : Array.isArray(cachedProducts?.products) && cachedProducts.products.length > 0;
+const hasCachedProducts = Array.isArray(cachedProducts)
+  ? cachedProducts.length > 0
+  : Array.isArray(cachedProducts?.products) && cachedProducts.products.length > 0;
 
-  if (hasCachedProducts) {
-    state.products = cachedProducts.products || cachedProducts;
+if (hasCachedProducts) {
+  state.products = cachedProducts.products || cachedProducts;
 
-    if (cachedProducts.total !== undefined) {
-      state.totalPages = Math.ceil(cachedProducts.total / state.pageSize) || 1;
-    }
-
-    renderFilteredProducts();
-    renderPagination();
-    return;
+  if (cachedProducts.total !== undefined) {
+    state.totalPages = Math.ceil(cachedProducts.total / state.pageSize) || 1;
   }
+
+  renderFilteredProducts();
+  renderPagination();
+  return;
+}
+
 
 
 
@@ -374,7 +382,7 @@ function resetToDefaultProductsView() {
   loadProducts(1);
 }
 
-document.getElementById("productsBtn")?.addEventListener("click", (e) => {
+document.getElementById("allProductsLink")?.addEventListener("click", (e) => {
   e.preventDefault();
   resetToDefaultProductsView();
 });
@@ -752,6 +760,7 @@ function bindCategoryEvent() {
     loadProducts(1);
   });
 }
+
 
 
 
