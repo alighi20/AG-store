@@ -81,6 +81,7 @@ export function renderProducts(products) {
     `;
 
     initProductClicks();
+    console.log(products[0]);
 }
 
 
