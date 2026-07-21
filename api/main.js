@@ -3,7 +3,7 @@ import {
   renderProducts,
   renderProductDetail,
   renderSlider,
-  
+
 } from "../js/ui.js";
 
 const API_BASE_URL = "https://api.apitester.ir/api";
@@ -119,26 +119,31 @@ async function refreshAccessToken() {
 
 
 const state = {
+
   products: [],
   categories: [],
-  slides: [],
-  selectedCategoryId: null,
-  searchTerm: "",
   currentPage: 1,
   pageSize: 12,
-  totalPages: 1
+  totalPages: 1,
+  selectedCategoryId: "all",
+  filters: {
+    search: "",
+    sort: "default",
+    minPrice: null,
+    maxPrice: null
+  }
 };
 
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   bindEvents();
-  
+
   // ۱. اول دسته‌بندی‌ها را لود کن تا مطمئن شوی ID دسته‌بندی‌ها درست است
   await loadCategories();
-  
+
   // ۲. مقدار پیش‌فرض را مشخص کن
-  state.selectedCategoryId = "all"; 
+  state.selectedCategoryId = "all";
   state.currentPage = 1;
 
   // ۳. حالا محصولات را لود کن
@@ -147,21 +152,21 @@ async function init() {
     loadCheapProducts(),
     loadExpensiveProducts()
   ]);
-  
+
   console.log("App fully initialized and products loaded.");
 }
 
 
-  if (!token) {
-    try {
-      await authenticate(); // لاگین خودکار با یوزر و پس هاردکد شده
-    } catch (error) {
-      console.error("[AUTH] Initial authentication failed:", error);
-    }
+if (!token) {
+  try {
+    await authenticate(); // لاگین خودکار با یوزر و پس هاردکد شده
+  } catch (error) {
+    console.error("[AUTH] Initial authentication failed:", error);
   }
-  state.selectedCategoryId = "all";
-  // ۲. بارگذاری داده‌ها (که خودشان اول کش را چک می‌کنند)
-  await Promise.allSettled([loadCategories(), loadProducts(),loadCheapProducts(),loadExpensiveProducts()]);
+}
+state.selectedCategoryId = "all";
+// ۲. بارگذاری داده‌ها (که خودشان اول کش را چک می‌کنند)
+await Promise.allSettled([loadCategories(), loadProducts(), loadCheapProducts(), loadExpensiveProducts()]);
 
 
 
@@ -303,23 +308,43 @@ async function loadProducts(page = 1) {
 
   const cachedProducts = readStorage(cacheKey);
 
-const hasCachedProducts = Array.isArray(cachedProducts)
-  ? cachedProducts.length > 0
-  : Array.isArray(cachedProducts?.products) && cachedProducts.products.length > 0;
+  const hasCachedProducts = Array.isArray(cachedProducts)
+    ? cachedProducts.length > 0
+    : Array.isArray(cachedProducts?.products) && cachedProducts.products.length > 0;
 
-if (hasCachedProducts) {
-  state.products = cachedProducts.products || cachedProducts;
+  if (hasCachedProducts) {
+    state.products = cachedProducts.products || cachedProducts;
 
-  if (cachedProducts.total !== undefined) {
-    state.totalPages = Math.ceil(cachedProducts.total / state.pageSize) || 1;
+    if (cachedProducts.total !== undefined) {
+      state.totalPages = Math.ceil(cachedProducts.total / state.pageSize) || 1;
+    }
+
+    renderFilteredProducts();
+renderPagination();
+    return;
   }
 
-  renderFilteredProducts();
-  renderPagination();
-  return;
-}
 
+const applyFiltersBtn = document.getElementById("applyFiltersBtn");
 
+console.log("Button Found:", applyFiltersBtn);
+
+applyFiltersBtn.addEventListener("click", () => {
+
+    console.log("===== APPLY CLICKED =====");
+
+    state.filters.sort = document.getElementById("sortSelect").value;
+
+    const min = document.getElementById("minPrice").value;
+    const max = document.getElementById("maxPrice").value;
+
+    state.filters.minPrice = min === "" ? null : Number(min);
+    state.filters.maxPrice = max === "" ? null : Number(max);
+
+    console.log("Filters After Click:", state.filters);
+
+    renderFilteredProducts();
+});
 
 
   setProductsLoading();
@@ -401,22 +426,88 @@ async function getProductById(id) {
 
   return result && result.isSuccess ? result.data : null;
 }
-
 function renderFilteredProducts() {
-  let filteredProducts = [...state.products];
 
-  // فیلتر جستجو (در صورتی که سرچ سمت کاربر باشد)
-  if (state.searchTerm) {
-    const term = state.searchTerm.trim().toLowerCase();
-    filteredProducts = filteredProducts.filter((product) => {
-      const title = String(product.title || "").toLowerCase();
-      const description = String(product.description || "").toLowerCase();
-      return title.includes(term) || description.includes(term);
-    });
-  }
+    let filteredProducts = [...state.products];
 
-  renderProducts(filteredProducts);
+    console.log("=================================");
+    console.log("محصولات اولیه:", filteredProducts);
+    console.log("فیلترها:", state.filters);
+
+    // سرچ
+    if (state.searchTerm) {
+
+        const term = state.searchTerm.trim().toLowerCase();
+
+        filteredProducts = filteredProducts.filter(product => {
+
+            const title = String(product.title || "").toLowerCase();
+            const description = String(product.description || "").toLowerCase();
+
+            return (
+                title.includes(term) ||
+                description.includes(term)
+            );
+
+        });
+
+    }
+
+    // حداقل قیمت
+    if (state.filters.minPrice !== null) {
+
+        filteredProducts = filteredProducts.filter(product =>
+            Number(product.price) >= state.filters.minPrice
+        );
+
+    }
+
+    // حداکثر قیمت
+    if (state.filters.maxPrice !== null) {
+
+        filteredProducts = filteredProducts.filter(product =>
+            Number(product.price) <= state.filters.maxPrice
+        );
+
+    }
+
+    // مرتب سازی
+    switch (state.filters.sort) {
+
+        case "price-asc":
+
+            filteredProducts.sort((a, b) =>
+                Number(a.price) - Number(b.price)
+            );
+
+            break;
+
+        case "price-desc":
+
+            filteredProducts.sort((a, b) =>
+                Number(b.price) - Number(a.price)
+            );
+
+            break;
+
+        case "title":
+
+            filteredProducts.sort((a, b) =>
+                String(a.title).localeCompare(
+                    String(b.title),
+                    "fa"
+                )
+            );
+
+            break;
+    }
+
+    console.log("بعد از فیلتر:", filteredProducts);
+
+    renderProducts(filteredProducts);
+
 }
+
 
 
 function renderPagination() {
@@ -451,12 +542,43 @@ function renderPagination() {
   html += `</ul></nav>`;
   paginationContainer.innerHTML = html;
 
-  // فعال‌سازی رویدادها
-  bindPaginationEvent();
+}
+
+function bindFilterEvent() {
+
+    const applyFiltersBtn = document.getElementById("applyFiltersBtn");
+
+    if (!applyFiltersBtn) {
+        console.log("Filter button not found");
+        return;
+    }
+
+    applyFiltersBtn.addEventListener("click", () => {
+
+        console.log("===== APPLY CLICKED =====");
+
+        state.filters.sort =
+            document.getElementById("sortSelect").value;
+
+        const min = document.getElementById("minPrice").value;
+        const max = document.getElementById("maxPrice").value;
+
+        state.filters.minPrice =
+            min === "" ? null : Number(min);
+
+        state.filters.maxPrice =
+            max === "" ? null : Number(max);
+
+        renderFilteredProducts();
+
+    });
+
 }
 
 
 function bindPaginationEvent() {
+
+  console.log("Pagination Event Bound");
   document.addEventListener("click", (event) => {
     // پیدا کردن دکمه صفحه‌بندی کلیک شده
     const pageLink = event.target.closest(".page-link[data-page]");
@@ -478,6 +600,9 @@ function bindPaginationEvent() {
 
 // این خط را داخل تابع bindEvents() موجود اضافه کنید:
 // bindPaginationEvent();
+
+
+
 
 
 async function loadCheapProducts() {
@@ -546,11 +671,11 @@ function renderCheapProductsSlider(products) {
   const wrapper = document.getElementById('cheap-products-wrapper');
   if (!wrapper) return;
 
-    // ۱. مرتب‌سازی از ارزان‌ترین به گران‌ترین
-    const sortedProducts = [...products].sort((a, b) => a.price - b.price);
+  // ۱. مرتب‌سازی از ارزان‌ترین به گران‌ترین
+  const sortedProducts = [...products].sort((a, b) => a.price - b.price);
 
-    // ۲. تولید HTML اسلایدها (اضافه شدن رویداد کلیک و استایل نشانگر موس)
-    wrapper.innerHTML = sortedProducts.map(product => `
+  // ۲. تولید HTML اسلایدها (اضافه شدن رویداد کلیک و استایل نشانگر موس)
+  wrapper.innerHTML = sortedProducts.map(product => `
         <div class="swiper-slide">
             <div class="product-card-mini" 
                  style="cursor: pointer;" 
@@ -562,30 +687,30 @@ function renderCheapProductsSlider(products) {
         </div>
     `).join('');
 
-    // ۳. راه‌اندازی Swiper با تاخیر کوچک جهت اطمینان از رندر کامل DOM
-    setTimeout(() => {
-        if (window.cheapSliderInstance) {
-            window.cheapSliderInstance.destroy(true, true);
-        }
+  // ۳. راه‌اندازی Swiper با تاخیر کوچک جهت اطمینان از رندر کامل DOM
+  setTimeout(() => {
+    if (window.cheapSliderInstance) {
+      window.cheapSliderInstance.destroy(true, true);
+    }
 
-        window.cheapSliderInstance = new Swiper('.cheap-products-slider', {
-            slidesPerView: 1,
-            spaceBetween: 15,
-            loop: sortedProducts.length > 4, // فعال‌سازی لوپ فقط در صورت کافی بودن تعداد محصولات
-            navigation: {
-                nextEl: '.cheap-slider-next',
-                prevEl: '.cheap-slider-prev',
-            },
-            observer: true,
-            observeParents: true,
-            breakpoints: {
-                480: { slidesPerView: 2 },
-                768: { slidesPerView: 3 },
-                1024: { slidesPerView: 4 }
-            },
-            rtl: true
-        });
-    }, 50);
+    window.cheapSliderInstance = new Swiper('.cheap-products-slider', {
+      slidesPerView: 1,
+      spaceBetween: 15,
+      loop: sortedProducts.length > 4, // فعال‌سازی لوپ فقط در صورت کافی بودن تعداد محصولات
+      navigation: {
+        nextEl: '.cheap-slider-next',
+        prevEl: '.cheap-slider-prev',
+      },
+      observer: true,
+      observeParents: true,
+      breakpoints: {
+        480: { slidesPerView: 2 },
+        768: { slidesPerView: 3 },
+        1024: { slidesPerView: 4 }
+      },
+      rtl: true
+    });
+  }, 50);
 }
 
 
@@ -638,6 +763,22 @@ function renderExpensiveProductsSlider(products) {
 
 
 
+function renderCurrentPage() {
+
+  const start =
+    (state.currentPage - 1) * state.pageSize;
+
+  const end =
+    start + state.pageSize;
+
+  const pageProducts =
+    state.filteredProducts.slice(start, end);
+
+  renderProducts(pageProducts);
+
+  renderPagination();
+
+}
 
 
 
@@ -698,9 +839,9 @@ function bindSliderCategoryEvent() {
     state.selectedCategoryId = categoryId;
     state.currentPage = 1;
     state.searchTerm = "";
-    
+
     loadProducts(1);
-    
+
     // اسکرول به بخش محصولات
     setTimeout(() => {
       document.getElementById("app")?.scrollIntoView({ behavior: 'smooth' });
@@ -716,6 +857,7 @@ function bindEvents() {
   bindPaginationEvent();
   bindAllProductsLink();
   bindSliderCategoryEvent();
+     bindFilterEvent();
 }
 
 function bindProductDetailsEvent() {
@@ -782,14 +924,14 @@ function bindSearchEvent() {
   });
 }
 function handleRoute() {
-    const hash = location.hash;
+  const hash = location.hash;
 
-    console.log("Route:", hash);
+  console.log("Route:", hash);
 
-    if (hash === "#/cart") {
-        renderCartPage();
-        return;
-    }
+  if (hash === "#/cart") {
+    renderCartPage();
+    return;
+  }
 
-    renderProducts();
+  renderProducts();
 }
